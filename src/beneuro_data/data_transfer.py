@@ -6,6 +6,7 @@ from beneuro_data.data_validation import (
     validate_raw_ephys_data_of_session,
     validate_raw_session,
     validate_raw_videos_of_session,
+    _find_spikeglx_recording_folders_in_session
 )
 from beneuro_data.extra_file_handling import (
     _find_extra_files_with_extensions,
@@ -31,6 +32,7 @@ def upload_raw_session(
     include_ephys: bool,
     include_videos: bool,
     include_extra_files: bool,
+    include_processed_kilosort_output: bool,  # New parameter
     whitelisted_files_in_root: tuple[str, ...],
     allowed_extensions_not_in_root: tuple[str, ...],
     rename_videos_first: bool,
@@ -138,6 +140,16 @@ def upload_raw_session(
             allowed_extensions_not_in_root,
         )
 
+    if include_processed_kilosort_output:
+        kilosort_files, remote_kilosort_files = _prepare_copying_processed_kilosort_output(
+            local_session_path,
+            subject_name,
+            local_root,
+            remote_root,
+            "error_if_different"
+        )
+        _copy_list_of_files(kilosort_files, remote_kilosort_files, "error_if_different")
+
     return True
 
 
@@ -201,6 +213,12 @@ def upload_raw_behavioral_data(
 
     return remote_file_paths_there
 
+
+def upload_kilosort_output(local_probe_path: Path, remote_probe_path: Path, if_exists: str) -> None:
+    kilosort_output_dir = local_probe_path / (local_probe_path.name + "_kilosort")
+    if kilosort_output_dir.exists() and kilosort_output_dir.is_dir():
+        remote_kilosort_output_dir = remote_probe_path / kilosort_output_dir.name
+        _copy_list_of_files([kilosort_output_dir], [remote_kilosort_output_dir], if_exists)
 
 def upload_raw_ephys_data(
     local_session_path: Path,
@@ -387,6 +405,7 @@ def download_raw_session(
     include_behavior: bool,
     include_ephys: bool,
     include_videos: bool,
+    include_kilosort_output: bool,  # New parameter
     whitelisted_files_in_root: tuple[str, ...],
     allowed_extensions_not_in_root: tuple[str, ...],
 ):
@@ -400,6 +419,8 @@ def download_raw_session(
     remote_ephys_files = []
     remote_video_files = []
     remote_extra_files = []
+    remote_kilosort_files = []
+    local_kilosort_files = []
 
     if_exists = "error_if_different"
 
@@ -450,6 +471,20 @@ def download_raw_session(
             warnings.warn(f"Skipping videos because of: {type(e).__name__}: {e}")
             include_videos = False
 
+
+    if include_kilosort_output:
+        try:
+            remote_kilosort_files, local_kilosort_files = _prepare_copying_kilosort_output(
+                remote_session_path,
+                subject_name,
+                remote_base_path,
+                local_base_path,
+                if_exists,
+            )
+        except Exception as e:
+            warnings.warn(f"Skipping Kilosort output because of: {type(e).__name__}: {e}")
+            include_kilosort_output = False
+
     # always try to include extra files
     try:
         remote_extra_files, local_extra_files = _prepare_copying_raw_extra_files(
@@ -489,6 +524,8 @@ def download_raw_session(
         _copy_list_of_files(remote_video_files, local_video_files, if_exists)
     if include_extra_files:
         _copy_list_of_files(remote_extra_files, local_extra_files, if_exists)
+    if include_kilosort_output:
+        _copy_list_of_files(remote_kilosort_files, local_kilosort_files, if_exists)
 
     local_session_path = _source_to_dest(
         remote_session_path, remote_base_path, local_base_path
@@ -635,6 +672,89 @@ def _prepare_copying_raw_extra_files(
     _check_list_of_files_before_copy(source_extra_files, dest_extra_files, if_exists)
 
     return source_extra_files, dest_extra_files
+
+
+def _prepare_copying_kilosort_output(
+    remote_session_path: Path,
+    subject_name: str,
+    remote_base_path: Path,
+    local_base_path: Path,
+    if_exists: str,
+):
+    """
+    Prepare copying Kilosort output from the remote to the local machine.
+    """
+    kilosort_files = []
+    local_kilosort_files = []
+
+    # Find all SpikeGLX recording folders
+    recording_folders = _find_spikeglx_recording_folders_in_session(remote_session_path)
+
+    for recording_folder in recording_folders:
+        # Check each probe folder for a Kilosort folder
+        probe_folders = [f for f in recording_folder.iterdir() if f.is_dir() and f.name.endswith('_imec0')]
+        for probe_folder in probe_folders:
+            kilosort_folder = probe_folder / 'Kilosort'
+            if kilosort_folder.exists():
+                for file in kilosort_folder.rglob('*'):
+                    if file.is_file():
+                        kilosort_files.append(file)
+                        local_kilosort_files.append(_source_to_dest(file, remote_base_path, local_base_path))
+
+    _check_list_of_files_before_copy(kilosort_files, local_kilosort_files, if_exists)
+
+    return kilosort_files, local_kilosort_files
+
+
+def _prepare_copying_processed_kilosort_output(
+    local_session_path: Path,
+    subject_name: str,
+    local_base_path: Path,
+    remote_base_path: Path,
+    if_exists: str,
+):
+    """
+    Prepare copying processed Kilosort output from the local machine to the remote.
+    """
+    kilosort_files = []
+    remote_kilosort_files = []
+
+    # Construct the path to the processed session
+    processed_session_path = local_base_path / "processed" / subject_name / local_session_path.name #TODO: needs to change depending on if we use raw or processed
+
+    # Find the ephys folder
+    ephys_folder = next(processed_session_path.glob("*_ephys"), None)
+    if ephys_folder:
+        for recording_folder in ephys_folder.iterdir():
+            if recording_folder.is_dir():
+                for probe_folder in recording_folder.iterdir():
+                    if probe_folder.is_dir() and probe_folder.name.endswith('_imec0'):
+                        # Files to copy
+                        files_to_copy = [
+                            probe_folder / "spikeinterface_recording.json",
+                            probe_folder / "spikeinterface_params.json",
+                            probe_folder / "spikeinterface_log.json",
+                        ]
+                        folders_to_copy = [
+                            probe_folder / "sorter_output",
+                            probe_folder / "in_container_sorting",
+                        ]
+
+                        for file in files_to_copy:
+                            if file.exists():
+                                kilosort_files.append(file)
+                                remote_kilosort_files.append(_source_to_dest(file, local_base_path, remote_base_path))
+
+                        for folder in folders_to_copy:
+                            if folder.exists():
+                                for file in folder.rglob('*'):
+                                    if file.is_file():
+                                        kilosort_files.append(file)
+                                        remote_kilosort_files.append(_source_to_dest(file, local_base_path, remote_base_path))
+
+    _check_list_of_files_before_copy(kilosort_files, remote_kilosort_files, if_exists)
+
+    return kilosort_files, remote_kilosort_files
 
 
 @validate_argument("processing_level", ["raw", "processed"])

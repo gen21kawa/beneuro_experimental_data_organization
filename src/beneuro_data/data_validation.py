@@ -396,10 +396,19 @@ def validate_raw_ephys_recording(
     expected_endings = [".lf.meta", ".lf.bin", ".ap.meta", ".ap.bin"]
     for probe_folder in probe_subfolders:
         imec_str = probe_folder.name.split("_")[-1]
+        # check if kilosort output folder exists
+        kilosort_output_dir = probe_folder / f"{probe_folder.name}_kilosort"
+
         expected_filenames = {
             f"{gid_folder_path.name}_t0.{imec_str}{ending}" for ending in expected_endings
         }
         found_filenames = {p.name for p in probe_folder.iterdir()}
+
+        # check if kilosort output folder exists, add it to the found filenames
+        #if kilosort_output_dir.exists() and kilosort_output_dir.is_dir():
+        #    found_filenames.add(kilosort_output_dir.name)
+        #expected_filenames.add(f"{probe_folder.name}_kilosort")
+
         if found_filenames != expected_filenames:
             raise ValueError(
                 f"Files in probe directory do not match the expected pattern. {probe_folder}"
