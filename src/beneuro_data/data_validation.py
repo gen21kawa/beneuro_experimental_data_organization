@@ -340,7 +340,6 @@ def validate_raw_ephys_recording(
     """
     Validate a single electrophysiology recording, making sure that subfolders and files
     have their names in the expected format.
-
     Parameters
     ----------
     gid_folder_path : Path
@@ -349,7 +348,6 @@ def validate_raw_ephys_recording(
         A tuple of file extensions that are allowed in the session directory excluding the root level.
         E.g. (".txt", )
         For what's allowed in the root, use `whitelisted_files_in_root`.
-
     Returns
     -------
     A tuple of the files and folders that are found and validated:
@@ -357,7 +355,7 @@ def validate_raw_ephys_recording(
     """
     # extract gx part
     gid = extract_gid(gid_folder_path.name)
-
+    
     # validate that the folder name has the expected structure
     session_name = gid_folder_path.parent.name
     expected_folder_name = f"{session_name}_{gid}"
@@ -365,7 +363,7 @@ def validate_raw_ephys_recording(
         raise ValueError(
             f"Folder name {gid_folder_path.name} does not match expected format {expected_folder_name}"
         )
-
+    
     # validate that there are only subfolders in the recording's folder
     # hidden files are allowed
     probe_subfolders = []
@@ -373,17 +371,14 @@ def validate_raw_ephys_recording(
         # hidden files are allowed
         if child.match(".*"):
             continue
-
         # files with some extensions are allowed and will be renamed and uploaded
         if child.suffix in allowed_extensions_not_in_root:
             continue
-
         if not child.is_dir():
             raise ValueError("Only folders are allowed in the ephys recordings folder")
-
         # the directories should be the probes' subfolders
         probe_subfolders.append(child)
-
+    
     # validate that the probe subfolders have the expected name
     probe_subfolder_pattern = rf"{gid_folder_path.name}_imec\d$"
     for probe_folder in probe_subfolders:
@@ -391,29 +386,38 @@ def validate_raw_ephys_recording(
             raise ValueError(
                 f"The following folder name doesn't match the expected format for probes: {probe_folder}"
             )
-
+    
     # validate that the subfolders have .lf.meta, .lf.bin, .ap.meta, .ap.bin files with the expected names
     expected_endings = [".lf.meta", ".lf.bin", ".ap.meta", ".ap.bin"]
     for probe_folder in probe_subfolders:
         imec_str = probe_folder.name.split("_")[-1]
-        # check if kilosort output folder exists
-        kilosort_output_dir = probe_folder / f"{probe_folder.name}_kilosort"
-
         expected_filenames = {
             f"{gid_folder_path.name}_t0.{imec_str}{ending}" for ending in expected_endings
         }
-        found_filenames = {p.name for p in probe_folder.iterdir()}
-
-        # check if kilosort output folder exists, add it to the found filenames
-        #if kilosort_output_dir.exists() and kilosort_output_dir.is_dir():
-        #    found_filenames.add(kilosort_output_dir.name)
-        #expected_filenames.add(f"{probe_folder.name}_kilosort")
-
-        if found_filenames != expected_filenames:
+        found_items = set()
+        
+        for item in probe_folder.iterdir():
+            if item.is_file():
+                found_items.add(item.name)
+            elif item.is_dir():
+                if item.name != "Kilosort":
+                    raise ValueError(
+                        f"Unexpected folder found in probe directory: {item.name}. Only 'Kilosort' folder is allowed."
+                    )
+                found_items.add(item.name)
+        
+        if not expected_filenames.issubset(found_items):
+            missing_files = expected_filenames - found_items
             raise ValueError(
-                f"Files in probe directory do not match the expected pattern. {probe_folder}"
+                f"Missing expected files in probe directory {probe_folder}: {', '.join(missing_files)}"
             )
-
+        
+        unexpected_items = found_items - expected_filenames - {"Kilosort"}
+        if unexpected_items:
+            raise ValueError(
+                f"Unexpected items found in probe directory {probe_folder}: {', '.join(unexpected_items)}"
+            )
+    
     return True
 
 

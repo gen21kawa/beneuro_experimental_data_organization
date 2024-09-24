@@ -43,6 +43,17 @@ children:
         name: M011_2023_04_04_16_00_g1_t0.imec0.lf.bin
       - type: file
         name: M011_2023_04_04_16_00_g1_t0.imec0.ap.bin
+      - type: folder
+        name: Kilosort
+        children:
+        - type: file
+          name: spike_times.npy
+        - type: file
+          name: spike_clusters.npy
+        - type: file
+          name: cluster_info.tsv
+        - type: file
+          name: params.py
   - type: folder
     name: run_task-task_files
     children:
@@ -73,6 +84,17 @@ children:
         name: M011_2023_05_05_17_30_g1_t0.imec0.lf.bin
       - type: file
         name: M011_2023_05_05_17_30_g1_t0.imec0.ap.bin
+      - type: folder
+        name: Kilosort
+        children:
+        - type: file
+          name: spike_times.npy
+        - type: file
+          name: spike_clusters.npy
+        - type: file
+          name: cluster_info.tsv
+        - type: file
+          name: params.py
   - type: folder
     name: run_task-task_files
     children:

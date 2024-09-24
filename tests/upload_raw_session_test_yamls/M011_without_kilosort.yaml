@@ -5,18 +5,14 @@ children:
   name: M011_2023_04_04_16_00
   children:
   - type: folder
-    name: Recording_2023_04_04_16_00
+    name: M011_2023_04_04_16_00_cameras
     children:
     - type: file
-      name: Camera_1.avi
+      name: M011_2023_04_04_16_00_camera_1.avi
     - type: file
-      name: Camera_2.avi
+      name: M011_2023_04_04_16_00_camera_2.avi
     - type: file
-      name: Camera_3.avi
-    - type: file
-      name: Camera_4.avi
-    - type: file
-      name: Camera_5.avi
+      name: M011_2023_04_04_16_00_camera_3.avi
     - type: file
       name: metadata.csv
   - type: file
@@ -28,8 +24,6 @@ children:
   - type: folder
     name: M011_2023_04_04_16_00_g1
     children:
-    - type: file
-      name: .DS_Store
     - type: folder
       name: M011_2023_04_04_16_00_g1_imec0
       children:
@@ -41,17 +35,6 @@ children:
         name: M011_2023_04_04_16_00_g1_t0.imec0.lf.bin
       - type: file
         name: M011_2023_04_04_16_00_g1_t0.imec0.ap.bin
-      - type: folder
-        name: Kilosort
-        children:
-        - type: file
-          name: spike_times.npy
-        - type: file
-          name: spike_clusters.npy
-        - type: file
-          name: cluster_info.tsv
-        - type: file
-          name: params.py
   - type: folder
     name: run_task-task_files
     children:

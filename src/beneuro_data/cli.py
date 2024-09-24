@@ -152,13 +152,6 @@ def download_last(
             help="Download video data or not.",
         ),
     ] = None,
-    include_kilosort_output: Annotated[
-        bool,
-        typer.Option(
-            "--include-kilosort/--ignore-kilosort",
-            help="Download Kilosort output or not.",
-        ),
-    ] = None,
     # include_extra_files: Annotated[
     #    bool,
     #    typer.Option(
@@ -166,6 +159,13 @@ def download_last(
     #        help="Download extra files that are created by the experimenter or other software.",
     #    ),
     # ] = True,
+    include_kilosort_output: Annotated[
+        bool,
+        typer.Option(
+            "--include-kilosort/--ignore-kilosort",
+            help="Download Kilosort output or not.",
+        ),
+    ] = None,
     processing_level: Annotated[
         str, typer.Argument(help="Processing level of the session. raw or processed.")
     ] = "raw",
@@ -214,7 +214,7 @@ def download_last(
         include_behavior,
         include_ephys,
         include_videos,
-        include_kilosort_output,  # Added for Kilosort output
+        include_kilosort_output,
         config.WHITELISTED_FILES_IN_ROOT,
         config.EXTENSIONS_TO_RENAME_AND_UPLOAD,
     )
@@ -257,6 +257,14 @@ def download_session(
             prompt=True,
         ),
     ],
+    include_kilosort_output: Annotated[
+        bool,
+        typer.Option(
+            "--include-kilosort/--ignore-kilosort",
+            help="Download Kilosort output or not.",
+            prompt=True,
+        ),
+    ],
     # extra files are always included
     # TODO do we want this to stay this way?
     # include_extra_files: Annotated[
@@ -279,7 +287,7 @@ def download_session(
     if processing_level != "raw":
         raise NotImplementedError("Sorry, only raw data is supported for now.")
 
-    if all([not include_behavior, not include_ephys, not include_videos]):
+    if all([not include_behavior, not include_ephys, not include_videos, not include_kilosort_output]):
         raise ValueError("At least one data type must be included.")
 
     config = _load_config()
@@ -292,6 +300,7 @@ def download_session(
         include_behavior,
         include_ephys,
         include_videos,
+        include_kilosort_output,
         config.WHITELISTED_FILES_IN_ROOT,
         config.EXTENSIONS_TO_RENAME_AND_UPLOAD,
     )
@@ -350,7 +359,7 @@ def dl(
     if processing_level != "raw":
         raise NotImplementedError("Sorry, only raw data is supported for now.")
 
-    if all([not include_behavior, not include_ephys, not include_videos]):
+    if all([not include_behavior, not include_ephys, not include_videos, not include_kilosort_output]):
         raise ValueError("At least one data type must be included.")
 
     config = _load_config()
@@ -363,7 +372,7 @@ def dl(
         include_behavior = include_behavior,
         include_ephys = include_ephys,
         include_videos = include_videos,
-        include_kilosort_output = include_kilosort_output, # Added for Kilosort output
+        include_kilosort_output = include_kilosort_output,
         whitelisted_files_in_root = config.WHITELISTED_FILES_IN_ROOT,
         allowed_extensions_not_in_root = config.EXTENSIONS_TO_RENAME_AND_UPLOAD
         )
@@ -758,8 +767,8 @@ def upload_session(
         include_behavior,
         include_ephys,
         include_videos,
+        include_processed_kilosort_output,
         include_extra_files,
-        include_processed_kilosort_output,  # Add this line for Kilosort output
         config.WHITELISTED_FILES_IN_ROOT,
         config.EXTENSIONS_TO_RENAME_AND_UPLOAD,
         rename_videos_first,
@@ -844,7 +853,7 @@ def up(
     if processing_level != "raw":
         raise NotImplementedError("Sorry, only raw data is supported for now.")
 
-    if all([not include_behavior, not include_ephys, not include_videos, not include_processed_kilosort_output]):
+    if all([not include_behavior, not include_ephys, not include_videos]):
         raise ValueError("At least one data type must be included.")
 
     # if videos are included, rename them first if not specified otherwise
@@ -867,8 +876,8 @@ def up(
             include_behavior,
             include_ephys,
             include_videos,
+            include_processed_kilosort_output,
             include_extra_files,
-            include_processed_kilosort_output,  # Add this line
             config.WHITELISTED_FILES_IN_ROOT,
             config.EXTENSIONS_TO_RENAME_AND_UPLOAD,
             rename_videos_first,
@@ -881,6 +890,7 @@ def up(
             include_behavior,
             include_ephys,
             include_videos,
+            include_processed_kilosort_output,
             include_extra_files,
             rename_videos_first,
             rename_extra_files_first,
@@ -920,7 +930,7 @@ def upload_last(
             help="Upload video data or not.",
         ),
     ] = None,
-        include_processed_kilosort_output: Annotated[
+    include_processed_kilosort_output: Annotated[
         bool,
         typer.Option(
             "--include-processed-kilosort/--ignore-processed-kilosort",
@@ -976,7 +986,6 @@ def upload_last(
 
     # then ask the user if they want to include behavior, ephys, and videos
     # only ask the ones that are not specified as a CLI option
-
     if include_behavior is None:
         include_behavior = typer.confirm("Include behavior?")
     if include_ephys is None:
@@ -1006,8 +1015,8 @@ def upload_last(
         include_behavior,
         include_ephys,
         include_videos,
+        include_processed_kilosort_output,
         include_extra_files,
-        include_processed_kilosort_output,  # Add this line for Kilosort output
         config.WHITELISTED_FILES_IN_ROOT,
         config.EXTENSIONS_TO_RENAME_AND_UPLOAD,
         rename_videos_first,

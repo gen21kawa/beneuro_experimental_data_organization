@@ -31,8 +31,8 @@ def upload_raw_session(
     include_behavior: bool,
     include_ephys: bool,
     include_videos: bool,
-    include_extra_files: bool,
     include_processed_kilosort_output: bool,  # New parameter
+    include_extra_files: bool,
     whitelisted_files_in_root: tuple[str, ...],
     allowed_extensions_not_in_root: tuple[str, ...],
     rename_videos_first: bool,
@@ -57,6 +57,8 @@ def upload_raw_session(
         Whether to upload the ephys data.
     include_videos : bool
         Whether to upload the video data.
+    include_processed_kilosort_output : bool
+        Whether to upload the processed kilosort output.
     include_extra_files : bool
         Whether to upload extra files such as comment.txt, traj_plan.txt, etc.
     whitelisted_files_in_root : tuple[str, ...]
@@ -77,13 +79,17 @@ def upload_raw_session(
     Returns True if the upload was successful, raises an error otherwise.
     """
     # have to rename first so that validation passes
+    print(f"Debug: rename_videos_first={rename_videos_first}, include_videos={include_videos}")
+
     if rename_videos_first:
         if not include_videos:
+            print("Debug: About to raise ValueError")
             raise ValueError(
                 "Do not rename videos with upload_raw_session if you're not uploading them."
             )
-
-        rename_raw_videos_of_session(local_session_path, subject_name)
+        else:
+            rename_raw_videos_of_session(local_session_path, subject_name)
+        print("Debug: Passed the error check")
 
     if rename_extra_files_first:
         if not include_extra_files:
@@ -130,15 +136,6 @@ def upload_raw_session(
             local_root,
             remote_root,
         )
-    if include_extra_files:
-        upload_extra_files(
-            local_session_path,
-            subject_name,
-            local_root,
-            remote_root,
-            whitelisted_files_in_root,
-            allowed_extensions_not_in_root,
-        )
 
     if include_processed_kilosort_output:
         kilosort_files, remote_kilosort_files = _prepare_copying_processed_kilosort_output(
@@ -149,6 +146,16 @@ def upload_raw_session(
             "error_if_different"
         )
         _copy_list_of_files(kilosort_files, remote_kilosort_files, "error_if_different")
+
+    if include_extra_files:
+        upload_extra_files(
+            local_session_path,
+            subject_name,
+            local_root,
+            remote_root,
+            whitelisted_files_in_root,
+            allowed_extensions_not_in_root,
+        )
 
     return True
 
@@ -213,12 +220,6 @@ def upload_raw_behavioral_data(
 
     return remote_file_paths_there
 
-
-def upload_kilosort_output(local_probe_path: Path, remote_probe_path: Path, if_exists: str) -> None:
-    kilosort_output_dir = local_probe_path / (local_probe_path.name + "_kilosort")
-    if kilosort_output_dir.exists() and kilosort_output_dir.is_dir():
-        remote_kilosort_output_dir = remote_probe_path / kilosort_output_dir.name
-        _copy_list_of_files([kilosort_output_dir], [remote_kilosort_output_dir], if_exists)
 
 def upload_raw_ephys_data(
     local_session_path: Path,
@@ -471,7 +472,6 @@ def download_raw_session(
             warnings.warn(f"Skipping videos because of: {type(e).__name__}: {e}")
             include_videos = False
 
-
     if include_kilosort_output:
         try:
             remote_kilosort_files, local_kilosort_files = _prepare_copying_kilosort_output(
@@ -512,6 +512,10 @@ def download_raw_session(
         warnings.warn("Skipping videos because they were not found. ")
         include_videos = False
 
+    if include_kilosort_output and len(remote_kilosort_files) == 0:
+        warnings.warn("Skipping Kilosort output because it was not found. ")
+        include_kilosort_output = False
+
     if include_extra_files and len(remote_extra_files) == 0:
         warnings.warn("Skipping extra files because they were not found. ")
         include_extra_files = False
@@ -522,10 +526,10 @@ def download_raw_session(
         _copy_list_of_files(remote_ephys_files, local_ephys_files, if_exists)
     if include_videos:
         _copy_list_of_files(remote_video_files, local_video_files, if_exists)
-    if include_extra_files:
-        _copy_list_of_files(remote_extra_files, local_extra_files, if_exists)
     if include_kilosort_output:
         _copy_list_of_files(remote_kilosort_files, local_kilosort_files, if_exists)
+    if include_extra_files:
+        _copy_list_of_files(remote_extra_files, local_extra_files, if_exists)
 
     local_session_path = _source_to_dest(
         remote_session_path, remote_base_path, local_base_path
@@ -673,7 +677,6 @@ def _prepare_copying_raw_extra_files(
 
     return source_extra_files, dest_extra_files
 
-
 def _prepare_copying_kilosort_output(
     remote_session_path: Path,
     subject_name: str,
@@ -704,7 +707,6 @@ def _prepare_copying_kilosort_output(
     _check_list_of_files_before_copy(kilosort_files, local_kilosort_files, if_exists)
 
     return kilosort_files, local_kilosort_files
-
 
 def _prepare_copying_processed_kilosort_output(
     local_session_path: Path,

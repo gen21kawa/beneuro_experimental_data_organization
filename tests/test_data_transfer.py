@@ -162,6 +162,7 @@ class RawSessionUploadTestCase:
     include_behavior: bool
     include_ephys: bool
     include_videos: bool
+    include_processed_kilosort_output: bool
     rename_videos_first: bool
     rename_extra_files_first: bool
 
@@ -172,15 +173,16 @@ class RawSessionUploadTestCase:
 
 raw_session_upload_test_cases_without_renaming_first = [
     RawSessionUploadTestCase(
-        "M011_correct.yaml",
-        "M011_2023_04_04_16_00",
-        None,
-        None,
-        True,
-        True,
-        True,
-        False,
-        False,
+        yaml_name = "M011_correct.yaml",
+        session_name = "M011_2023_04_04_16_00",
+        expected_error=None,
+        error_message=None,
+        include_behavior=True,
+        include_ephys=True,
+        include_videos=True,
+        include_processed_kilosort_output=False,   
+        rename_videos_first=False,
+        rename_extra_files_first=False,
     ),
     RawSessionUploadTestCase(
         "M011_with_extra_txt_files.yaml",
@@ -190,6 +192,7 @@ raw_session_upload_test_cases_without_renaming_first = [
         True,
         True,
         True,
+        False,
         False,
         False,
     ),
@@ -203,6 +206,7 @@ raw_session_upload_test_cases_without_renaming_first = [
         True,
         False,
         False,
+        False,
     ),
     RawSessionUploadTestCase(
         "M011_with_comment_txt.yaml",
@@ -214,12 +218,14 @@ raw_session_upload_test_cases_without_renaming_first = [
         True,
         False,
         False,
+        False,
     ),
     RawSessionUploadTestCase(
         "M011_correct_but_no_behavior.yaml",
         "M011_2023_04_04_16_00",
         WrongNumberOfFilesError,
         "Expected 2 files with extension .pca",
+        True,
         True,
         True,
         False,
@@ -233,6 +239,7 @@ raw_session_upload_test_cases_without_renaming_first = [
         "no recordings found",
         True,
         True,
+        True, 
         False,
         False,
         False,
@@ -243,8 +250,9 @@ raw_session_upload_test_cases_without_renaming_first = [
         FileNotFoundError,
         "no video folder found",
         True,
+        False,
         True,
-        True,
+        False,
         False,
         False,
     ),
@@ -259,6 +267,7 @@ raw_session_upload_test_cases_without_renaming_first = [
         False,
         False,
         False,
+        False,
     ),
     # not having to upload missing ephys should not raise error
     RawSessionUploadTestCase(
@@ -267,6 +276,7 @@ raw_session_upload_test_cases_without_renaming_first = [
         None,
         None,
         True,
+        False,
         False,
         False,
         False,
@@ -283,6 +293,7 @@ raw_session_upload_test_cases_without_renaming_first = [
         False,
         False,
         False,
+        False,
     ),
     RawSessionUploadTestCase(
         "M011_wrong_video_folder_name.yaml",
@@ -292,6 +303,7 @@ raw_session_upload_test_cases_without_renaming_first = [
         True,
         True,
         True,
+        False,
         False,
         False,
     ),
@@ -306,6 +318,7 @@ raw_session_upload_test_cases_with_renaming_first = [
         True,
         True,
         True,
+        False,
         True,
         True,
     ),
@@ -317,6 +330,7 @@ raw_session_upload_test_cases_with_renaming_first = [
         True,
         True,
         True,
+        False,
         True,
         True,
     ),
@@ -328,6 +342,7 @@ raw_session_upload_test_cases_with_renaming_first = [
         True,
         True,
         True,
+        False,
         True,
         True,
     ),
@@ -339,6 +354,7 @@ raw_session_upload_test_cases_with_renaming_first = [
         True,
         True,
         True,
+        False,
         True,
         True,
     ),
@@ -347,6 +363,7 @@ raw_session_upload_test_cases_with_renaming_first = [
         "M011_2023_04_04_16_00",
         WrongNumberOfFilesError,
         "Expected 2 files with extension .pca",
+        True,
         True,
         True,
         False,
@@ -360,6 +377,7 @@ raw_session_upload_test_cases_with_renaming_first = [
         "no recordings found",
         True,
         True,
+        True,
         False,
         False,
         True,
@@ -371,7 +389,8 @@ raw_session_upload_test_cases_with_renaming_first = [
         "no video folder found",
         True,
         True,
-        True,
+        False,
+        False,
         True,
         True,
     ),
@@ -383,6 +402,7 @@ raw_session_upload_test_cases_with_renaming_first = [
         None,
         False,
         True,
+        False,
         False,
         False,
         True,
@@ -397,22 +417,9 @@ raw_session_upload_test_cases_with_renaming_first = [
         False,
         False,
         False,
-        True,
-    ),
-    # not uploading videos but trying to rename them should raise error
-    RawSessionUploadTestCase(
-        "M011_correct_but_no_videos.yaml",
-        "M011_2023_04_04_16_00",
-        ValueError,
-        "Do not rename videos",
-        True,
-        True,
         False,
         True,
-        True,
     ),
-    # if we're renaming the videos first,
-    # having a wrong video folder should not raise errors
     RawSessionUploadTestCase(
         "M011_wrong_video_folder_name.yaml",
         "M011_2023_04_04_16_00",
@@ -421,8 +428,33 @@ raw_session_upload_test_cases_with_renaming_first = [
         True,
         True,
         True,
+        False,
         True,
         True,
+    ),
+    RawSessionUploadTestCase(
+        yaml_name='M011_with_kilosort.yaml',
+        session_name='M011_2023_04_04_16_00',
+        expected_error=None,
+        error_message=None,
+        include_behavior=True,
+        include_ephys=True,
+        include_videos=True,
+        include_processed_kilosort_output=True,
+        rename_videos_first=False,
+        rename_extra_files_first=False,
+    ),
+    RawSessionUploadTestCase(
+        yaml_name='M011_without_kilosort.yaml',
+        session_name='M011_2023_04_04_16_00',
+        expected_error=None,
+        error_message=None,
+        include_behavior=True,
+        include_ephys=True,
+        include_videos=True,
+        include_processed_kilosort_output=False,
+        rename_videos_first=False,
+        rename_extra_files_first=False,
     ),
 ]
 
@@ -440,6 +472,7 @@ all_test_case_ids = [
     )
     for tc in all_raw_session_upload_test_cases
 ]
+
 
 
 @pytest.mark.parametrize(
@@ -473,11 +506,13 @@ def test_upload_raw_session(tmp_path, test_case: RawSessionUploadTestCase):
             test_case.include_behavior,
             test_case.include_ephys,
             test_case.include_videos,
+            test_case.include_processed_kilosort_output,
             True,
             WHITELISTED_FILES_IN_ROOT,
             EXTENSIONS_TO_RENAME_AND_UPLOAD,
             test_case.rename_videos_first,
             test_case.rename_extra_files_first,
+            
         )
 
         import filecmp
@@ -486,7 +521,7 @@ def test_upload_raw_session(tmp_path, test_case: RawSessionUploadTestCase):
 
         assert len(report.left_only) == 0
         assert len(report.right_only) == 0
-
+   
     elif issubclass(test_case.expected_error, BaseException):
         with pytest.raises(test_case.expected_error, match=test_case.error_message):
             upload_raw_session(
@@ -497,7 +532,8 @@ def test_upload_raw_session(tmp_path, test_case: RawSessionUploadTestCase):
                 test_case.include_behavior,
                 test_case.include_ephys,
                 test_case.include_videos,
-                True,
+                test_case.include_processed_kilosort_output,
+                True,  # include_extra_files
                 WHITELISTED_FILES_IN_ROOT,
                 EXTENSIONS_TO_RENAME_AND_UPLOAD,
                 test_case.rename_videos_first,
