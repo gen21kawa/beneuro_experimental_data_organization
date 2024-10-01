@@ -22,6 +22,55 @@ app = typer.Typer()
 
 
 @app.command()
+def nwb_to_pyaldata(
+    session_name: Annotated[
+        str,
+        typer.Argument(
+            help="Session name to convert"
+        ),
+    ],
+    verbose: Annotated[
+        bool,
+        typer.Option(
+            "--verbose/--no-verbose",
+            help="Verbosity on pyaldata conversion"
+        )
+    ] = False
+):
+    """
+    Convert a session's data to from NWB to pyaldata form, using a default channel map or a custom one
+
+    """
+    # TODO: Make custom channel map option in case we dont agree with pinpoint
+
+    from beneuro_data.conversion.convert_nwb_to_pyaldata import convert_nwb_to_pyaldata
+
+    config = _load_config()
+    local_session_path = config.get_local_session_path(session_name, 'processed')
+
+    if not local_session_path.absolute().is_dir():
+        raise ValueError("Session path must be a directory.")
+    if not local_session_path.absolute().exists():
+        raise ValueError("Session path does not exist.")
+    if not local_session_path.absolute().is_relative_to(config.LOCAL_PATH):
+        raise ValueError("Session path must be inside the local root folder.")
+
+    nwbfiles = list(local_session_path.glob('*.nwb'))
+    if len(nwbfiles) > 1:
+        raise FileNotFoundError("Too many nwb files in session folder!")
+    elif not nwbfiles:
+        raise FileNotFoundError("No .nwb file found in session folder!")
+
+    nwbfile_path = nwbfiles[0].absolute()
+
+    # Run conversion
+    convert_nwb_to_pyaldata(
+        nwbfile_path,
+        verbose
+    )
+
+
+@app.command()
 def to_nwb(
     local_session_path: Annotated[
         Path,

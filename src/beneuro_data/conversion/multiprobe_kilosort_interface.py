@@ -27,12 +27,12 @@ def _try_loading_trajectory_file(raw_recording_path: Path) -> dict | None:
     -------
     Dictionary with trajectory information per probe if the trajectory file is found.
     None if the trajectory file not found.
-    
+
     Raises
     ------
     FileExistsError
         If more than one trajectory files are found.
-        
+
     Warns
     -----
     If no trajectory file is found.
