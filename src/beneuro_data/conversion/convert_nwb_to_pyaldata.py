@@ -660,7 +660,7 @@ class ParsedNWBFile:
     def add_mouse_and_session(self):
         self.pyaldata_df["animal"] = [self.subject_id] * len(self.pyaldata_df)
         self.pyaldata_df["session"] = (
-            [self.nwbfile_path.name[5:-4]]
+            [self.nwbfile_path.name[:-4]]
             * len(self.pyaldata_df)
         )
         return

@@ -11,7 +11,7 @@ from beneuro_data.conversion.convert_nwb_to_pyaldata import convert_nwb_to_pyald
 @pytest.mark.needs_experimental_data
 @pytest.mark.processing
 @pytest.mark.parametrize("session_name", ["M030_2024_04_12_09_40"])
-def test_nwb_to_pyaldata(session_name):
+def test_pyaldata_converter(session_name):
     config = _load_config()
     local_session_path = config.get_local_session_path(session_name, "processed")
 
@@ -24,8 +24,15 @@ def test_nwb_to_pyaldata(session_name):
         mat_file.unlink()
 
     nwbfile_path = nwbfiles[0].absolute()
-
     convert_nwb_to_pyaldata(nwbfile_path=nwbfile_path, verbose=False)
+
+
+@pytest.mark.needs_experimental_data
+@pytest.mark.processing
+@pytest.mark.parametrize("session_name", ["M030_2024_04_12_09_40"])
+def test_pyaldata_loading_and_format(session_name):
+    config = _load_config()
+    local_session_path = config.get_local_session_path(session_name, "processed")
     mat = scipy.io.loadmat(
         local_session_path / f"{session_name}_pyaldata.mat", simplify_cells=True
     )
@@ -78,7 +85,7 @@ def test_nwb_to_pyaldata(session_name):
 
     # Assert that all expected columns are present
     # TODO: Add some more thorough checking on the data structure.
-
+    assert all(df['session'] == session_name)
     assert set(expected_columns).issubset(
         df.columns
     ), f"Missing columns: {set(expected_columns) - set(df.columns)}"
