@@ -42,8 +42,8 @@ def _try_loading_trajectory_file(raw_recording_path: Path) -> dict | None:
     pinpoint_trajectory_file = list(raw_recording_path.glob("*trajectory.txt"))
     if not pinpoint_trajectory_file:
         warnings.warn(
-            f"No trajectory file from pinpoint found. If no trajectory file is present"
-            f" channel map information cannot be loaded"
+            "No trajectory file from pinpoint found. If no trajectory file is present"
+            " channel map information cannot be loaded"
         )
         return
 
@@ -62,8 +62,8 @@ def _try_loading_trajectory_file(raw_recording_path: Path) -> dict | None:
         for idx, probe_name in enumerate(probe_names):
             if probe_name != f"imec{idx}":
                 warnings.warn(
-                    f"Pinpoint probes need to named either 'imec0' or 'imec1' to match spikeglx. "
-                    f"Skipping probe information loading"
+                    "Pinpoint probes need to named either 'imec0' or 'imec1' to match spikeglx. "
+                    "Skipping probe information loading"
                 )
                 return
 
@@ -151,11 +151,11 @@ def _create_channel_map(
 
     pinpoint_channel_map_file = list(raw_recording_path.glob("*channel_map.txt"))
     if not pinpoint_channel_map_file:
-        warnings.warn(f"No channel map file from pinpoint found")
+        warnings.warn("No channel map file from pinpoint found")
         return
 
     elif len(pinpoint_channel_map_file) > 1:
-        warnings.warn(f"Too many channel map files from pinpoint found")
+        warnings.warn("Too many channel map files from pinpoint found")
         return
 
     channel_map = {}
@@ -279,7 +279,7 @@ class MultiProbeKiloSortInterface(KiloSortSortingInterface):
                     z=z,
                     id=contact_id,
                     location=contact_location,
-                    reference=f"Local probe reference: Top of the probe",
+                    reference="Local probe reference: Top of the probe",
                     enforce_unique_id=False,
                 )
 

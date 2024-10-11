@@ -10,7 +10,6 @@ from test_data_validation import (
 )
 
 from beneuro_data.data_transfer import download_raw_session
-from beneuro_data.data_validation import WrongNumberOfFilesError
 
 TEST_DIR_PATH = os.path.dirname(__file__)
 DOWNLOAD_RAW_SESSION_TEST_FOLDER = os.path.join(

@@ -1,7 +1,6 @@
 import datetime
 from pathlib import Path
 
-from .config import _load_config
 from .data_validation import EXPECTED_DATE_FORMAT, validate_session_path
 
 

@@ -7,9 +7,7 @@ import warnings
 import numpy as np
 import pandas as pd
 import scipy
-
 from ndx_pose import PoseEstimationSeries
-
 from pynwb import NWBHDF5IO
 from pynwb.behavior import SpatialSeries
 from pynwb.misc import Units
@@ -57,7 +55,6 @@ def _bin_spikes(probe_units: Units, bin_size: float) -> np.array:
 
 
 def _add_unit_counter_to_unit_guide(unit_guide):
-
     warnings.warn(
         "_add_unit_counter_to_unit_guide() is deprecated. Unit guides are now called chan_best"
         " and do not have a second column"
@@ -138,7 +135,6 @@ def _parse_pynwb_probe(
         }
 
     for brain_area in brain_areas:
-
         if no_pinpoint_channel_map:  # Take all channels if there is no channel map
             brain_area_channels = [key for key, value in probe_channel_map.items()]
         else:
@@ -159,9 +155,9 @@ def _parse_pynwb_probe(
         brain_area_spikes_and_chan_best[brain_area.replace("-", "_")] = {
             "spikes": binned_spikes[brain_area_neurons, :][sorted_chan_best_indices, :]
         }
-        brain_area_spikes_and_chan_best[brain_area.replace("-", "_")][
-            "chan_best"
-        ] = sorted_chan_best
+        brain_area_spikes_and_chan_best[brain_area.replace("-", "_")]["chan_best"] = (
+            sorted_chan_best
+        )
         brain_area_spikes_and_chan_best[brain_area.replace("-", "_")]["KSLabel"] = (
             probe_units.KSLabel[brain_area_neurons][sorted_chan_best_indices]
         )
@@ -290,10 +286,8 @@ def _add_data_to_trial(
 
 
 class ParsedNWBFile:
-
     def __init__(self, nwbfile_path, verbose):
         with NWBHDF5IO(nwbfile_path, mode="r") as io:
-
             # General
             self.bin_size = 0.01
             self.verbose = verbose
@@ -351,7 +345,6 @@ class ParsedNWBFile:
                     self.nwbfile.processing[processing_key].data_interfaces,
                 )
                 if processing_key == "behavior":
-
                     # Pycontrol states and events. This is assumed to always be there if
                     # there is a behavior processin module
                     self.parse_nwb_pycontrol_states()
@@ -461,7 +454,7 @@ class ParsedNWBFile:
 
         """
         if "Position" not in self.behavior.keys():
-            warnings.warn(f"No motion data available")
+            warnings.warn("No motion data available")
             self.pycontrol_motion_sensors = np.nan
             return
 
@@ -482,7 +475,7 @@ class ParsedNWBFile:
 
         """
         if "Pose estimation" not in self.behavior.keys():
-            warnings.warn(f"No anipose data available")
+            warnings.warn("No anipose data available")
             return
 
         if self.verbose:
@@ -551,7 +544,6 @@ class ParsedNWBFile:
         return
 
     def add_pycontrol_events_to_df(self):
-
         unique_events = self.pycontrol_events["event"].unique()
         for unique_event in unique_events:
             self.pyaldata_df[f"values_{unique_event}"] = np.nan
@@ -628,7 +620,6 @@ class ParsedNWBFile:
                 for brain_area_key, brain_area_spike_data in self.spike_data[
                     probe_key
                 ].items():
-
                     # Add unit guide
                     self.pyaldata_df[f"{brain_area_key}_chan_best"] = [
                         brain_area_spike_data["chan_best"]
@@ -659,13 +650,10 @@ class ParsedNWBFile:
 
     def add_mouse_and_session(self):
         self.pyaldata_df["animal"] = [self.subject_id] * len(self.pyaldata_df)
-        self.pyaldata_df["session"] = (
-            [self.nwbfile_path.name[:-4]]
-            * len(self.pyaldata_df)
-        )
+        self.pyaldata_df["session"] = [self.nwbfile_path.name[:-4]] * len(self.pyaldata_df)
         return
 
-    def purge_nan_columns(self, column_subset='values_') -> None:
+    def purge_nan_columns(self, column_subset="values_") -> None:
         """
         Remove columns that are all nans
 
@@ -679,7 +667,9 @@ class ParsedNWBFile:
         -------
 
         """
-        columns_to_select = [col for col in self.pyaldata_df.columns if col.startswith(column_subset)]
+        columns_to_select = [
+            col for col in self.pyaldata_df.columns if col.startswith(column_subset)
+        ]
 
         def _is_empty_array_or_nans(value):
             if isinstance(value, np.ndarray):
@@ -698,7 +688,7 @@ class ParsedNWBFile:
 
         return
 
-    def expand_dim_in_single_bin_trials(self, column_subset='_spikes') -> None:
+    def expand_dim_in_single_bin_trials(self, column_subset="_spikes") -> None:
         """
         Expand 1D arrays in length one trials
 
@@ -711,11 +701,12 @@ class ParsedNWBFile:
         -------
 
         """
+
         def _expand_dim_in_single_bin_trial(value):
             if isinstance(value, np.ndarray):
                 return np.expand_dims(value, axis=1)
 
-        trial_length_1_df = self.pyaldata_df.query('trial_length == 1')
+        trial_length_1_df = self.pyaldata_df.query("trial_length == 1")
         for column in trial_length_1_df.columns:
             if column_subset in column:
                 trial_length_1_df[column].apply(_expand_dim_in_single_bin_trial)
@@ -783,7 +774,7 @@ class ParsedNWBFile:
                     .strip()
                 )
                 if user_input == "y":
-                    print(f"Saving file...")
+                    print("Saving file...")
                     data_array = self.pyaldata_df.to_records(index=False)
                     scipy.io.savemat(path_to_save, {"pyaldata": data_array})
                     print(f"File '{path_to_save}' has been overwritten.")
@@ -794,7 +785,7 @@ class ParsedNWBFile:
                 else:
                     print("Please enter 'y' for yes or 'n' for no.")
         else:
-            print(f"Saving file...")
+            print("Saving file...")
             data_array = self.pyaldata_df.to_records(index=False)
             scipy.io.savemat(path_to_save, {"pyaldata": data_array})
             print(f"Saved pyaldata file in {path_to_save}")
@@ -802,7 +793,6 @@ class ParsedNWBFile:
 
 
 def convert_nwb_to_pyaldata(nwbfile_path, verbose):
-
     # Parse nwb data
     parsed_nwbfile = ParsedNWBFile(nwbfile_path, verbose)
 

@@ -2,7 +2,6 @@ import re
 import warnings
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 from beneuro_data.extra_file_handling import _find_whitelisted_files_in_root
 

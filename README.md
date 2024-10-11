@@ -96,6 +96,20 @@ The tool needs to know where the experimental data is stored locally and remotel
 
 2. Run `bnd check-config` to verify that the folders in the config have the expected `raw` and `processed` folders within them.
 
+## Linting and formatting
+
+If you want to have automatic code formatting in the project consider using the configured 
+`pre-commit` hook in the `.pre-commit-config.yaml`.
+
+Run the following command inside the directory of the project.
+```shell
+$ poetry run pre-commit install
+```
+
+Now, every time you commit, the tool ruff will automatically check your code, fix it 
+when possible, and reformat it. If `ruff` has to fix your code it will consider the commit 
+a Fail but it will fix it automatically so no need to worry.
+
 
 # CLI usage
 ## Help
