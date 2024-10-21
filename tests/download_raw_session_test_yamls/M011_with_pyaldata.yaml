@@ -1,11 +1,11 @@
 type: folder
 name: M011
 children:
-- type: file
-  name: M011_2023_04_04_16_00_pyaldata.mat
 - type: folder
   name: M011_2023_04_04_16_00
   children:
+  - type: file
+    name: M011_2023_04_04_16_00_pyaldata.mat  
   - type: folder
     name: M011_2023_04_04_16_00_cameras
     children:

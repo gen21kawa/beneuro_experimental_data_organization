@@ -354,7 +354,7 @@ raw_session_upload_test_cases_without_renaming_first = [
         yaml_name="M011_without_pyaldata.yaml",
         session_name="M011_2023_04_04_16_00",
         expected_error=FileNotFoundError,
-        error_message="No pyaldata file found.",
+        error_message="No PyalData file found.",
         include_behavior=True,
         include_ephys=True,
         include_videos=True,
@@ -586,6 +586,6 @@ def test_upload_raw_session(tmp_path, test_case: RawSessionUploadTestCase):
                 test_case.rename_videos_first,
                 test_case.rename_extra_files_first,
                 include_nwb=test_case.include_nwb,
-                include_pyaldata=test_case.include_pyaldata
+                include_pyaldata=test_case.include_pyaldata,
                 include_kilosort=test_case.include_kilosort
             )

@@ -116,7 +116,7 @@ session_download_test_cases = [
         include_kilosort=True,
     ),
     # without nwb file
-    RawSessionUploadTestCase(
+    RawSessionDownloadTestCase(
         yaml_name="M011_without_nwb.yaml",
         session_name="M011_2023_04_04_16_00",
         expected_error=FileNotFoundError,
@@ -124,12 +124,10 @@ session_download_test_cases = [
         include_behavior=True,
         include_ephys=True,
         include_videos=True,
-        rename_videos_first=False,
-        rename_extra_files_first=False,
         include_nwb=True,
     ),
     # with nwb file
-    RawSessionUploadTestCase(
+    RawSessionDownloadTestCase(
         yaml_name="M011_with_nwb.yaml",
         session_name="M011_2023_04_04_16_00",
         expected_error=None,
@@ -137,12 +135,10 @@ session_download_test_cases = [
         include_behavior=True,
         include_ephys=True,
         include_videos=True,
-        rename_videos_first=False,
-        rename_extra_files_first=False,
         include_nwb=True,
     ),
     # without pyaldata file
-    RawSessionUploadTestCase(
+    RawSessionDownloadTestCase(
         yaml_name="M011_without_pyaldata.yaml",
         session_name="M011_2023_04_04_16_00",
         expected_error=FileNotFoundError,
@@ -150,12 +146,10 @@ session_download_test_cases = [
         include_behavior=True,
         include_ephys=True,
         include_videos=True,
-        rename_videos_first=False,
-        rename_extra_files_first=False,
         include_pyaldata=True,
     ),
     # with pyaldata file
-    RawSessionUploadTestCase(
+    RawSessionDownloadTestCase(
         yaml_name="M011_with_pyaldata.yaml",
         session_name="M011_2023_04_04_16_00",
         expected_error=None,
@@ -163,8 +157,6 @@ session_download_test_cases = [
         include_behavior=True,
         include_ephys=True,
         include_videos=True,
-        rename_videos_first=False,
-        rename_extra_files_first=False,
         include_pyaldata=True,
     )
 ]

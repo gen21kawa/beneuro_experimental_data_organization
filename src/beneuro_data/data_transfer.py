@@ -13,6 +13,8 @@ from beneuro_data.data_validation import (
     validate_raw_session,
     validate_raw_videos_of_session,
     validate_kilosort,
+    validate_nwb_file,
+    validate_pyaldata_file,
 )
 from beneuro_data.extra_file_handling import (
     _find_extra_files_with_extensions,
@@ -105,7 +107,7 @@ def upload_raw_session(
 
     # TODO maybe check separately to have the option to upload things that are valid
     # check everything we want to upload
-    behavior_files, ephys_files, video_files, kilosort_files = validate_raw_session(
+    behavior_files, ephys_files, video_files, nwb_files, pyaldata_files, kilosort_files = validate_raw_session(
         local_session_path,
         subject_name,
         include_behavior,
@@ -113,6 +115,8 @@ def upload_raw_session(
         include_videos,
         whitelisted_files_in_root,
         allowed_extensions_not_in_root,
+        include_nwb=include_nwb,
+        include_pyaldata=include_pyaldata,
         include_kilosort=include_kilosort
     )
 
@@ -428,7 +432,7 @@ def upload_nwb_file(
 ) -> bool:
     # Implement logic to upload NWB files
     # Validate NWB file
-    nwb_files = validate_nwb_file(local_session_path, subject_name)
+    nwb_files = validate_nwb_file(local_session_path)
     # Prepare paths
     remote_nwb_files = _source_to_dest(nwb_files, local_root, remote_root)
     # Copy files
@@ -442,7 +446,7 @@ def upload_pyaldata_file(
     remote_root: Path,
 ) -> bool:
     # Implement logic to upload PyalData files
-    pyaldata_files = validate_pyaldata_file(local_session_path, subject_name)
+    pyaldata_files = validate_pyaldata_file(local_session_path)
     remote_pyaldata_files = _source_to_dest(pyaldata_files, local_root, remote_root)
     _copy_list_of_files(pyaldata_files, remote_pyaldata_files, if_exists="error_if_different")
     return True
@@ -535,6 +539,33 @@ def download_raw_session(
             warnings.warn(f"Skipping Kilosort output because of: {type(e).__name__}: {e}")
             include_kilosort = False
 
+    # Handle NWB file
+    if include_nwb:
+        try:
+            remote_nwb_files, local_nwb_files = _prepare_copying_nwb_file(
+                remote_session_path,
+                remote_base_path,
+                local_base_path,
+                if_exists=if_exists,
+            )
+        except Exception as e:
+            warnings.warn(f"Skipping NWB file because of: {type(e).__name__}: {e}")
+            include_nwb = False
+
+    # Handle PyalData file
+    if include_pyaldata:
+        try:
+            remote_pyaldata_files, local_pyaldata_files = _prepare_copying_pyaldata_file(
+                remote_session_path,
+                remote_base_path,
+                local_base_path,
+                if_exists=if_exists,
+            )
+        except Exception as e:
+            warnings.warn(f"Skipping PyalData file because of: {type(e).__name__}: {e}")
+            include_pyaldata = False
+
+
     # always try to include extra files
     try:
         remote_extra_files, local_extra_files = _prepare_copying_raw_extra_files(
@@ -571,6 +602,14 @@ def download_raw_session(
         warnings.warn("Skipping Kilosort output because it was not found.")
         include_kilosort = False
 
+    if include_nwb and len(remote_nwb_files) == 0:
+        warnings.warn("Skipping NWB file because it was not found.")
+        include_nwb = False
+
+    if include_pyaldata and len(remote_pyaldata_files) == 0:
+        warnings.warn("Skipping PyalData file because it was not found.")
+        include_pyaldata = False
+
     if include_behavior:
         _copy_list_of_files(remote_behavior_files, local_behavior_files, if_exists)
     if include_ephys:
@@ -581,6 +620,10 @@ def download_raw_session(
         _copy_list_of_files(remote_extra_files, local_extra_files, if_exists)
     if include_kilosort:
         _copy_list_of_files(remote_kilosort_files, local_kilosort_files, if_exists)
+    if include_nwb:
+        _copy_list_of_files(remote_nwb_files, local_nwb_files, if_exists)
+    if include_pyaldata:
+        _copy_list_of_files(remote_pyaldata_files, local_pyaldata_files, if_exists)
 
 
     local_session_path = _source_to_dest(
@@ -595,7 +638,10 @@ def download_raw_session(
         include_videos,
         whitelisted_files_in_root,
         allowed_extensions_not_in_root,
+        include_nwb=include_nwb,
+        include_pyaldata=include_pyaldata,
         include_kilosort=include_kilosort
+
     )
 
     return local_session_path
@@ -760,6 +806,68 @@ def _prepare_copying_kilosort(
     dest_kilosort_files = _source_to_dest(source_kilosort_files, source_base_path, dest_base_path)
     _check_list_of_files_before_copy(source_kilosort_files, dest_kilosort_files, if_exists)
     return source_kilosort_files, dest_kilosort_files
+
+# prepare copy nwb file
+def _prepare_copying_nwb_file(
+    source_session_path: Path,
+    source_base_path: Path,
+    dest_base_path: Path,
+    if_exists: str,
+):
+    """
+    Prepare copying NWB file from the source to the destination.
+
+    Parameters
+    ----------
+    source_session_path : Path
+        Path to the session on the source computer.
+    source_base_path : Path
+        The root directory of the source data.
+    dest_base_path : Path
+        The root directory of the destination data.
+    if_exists: str
+        Behavior when the file already exists.
+
+    Returns
+    -------
+    source_nwb_files, dest_nwb_files : list[Path], list[Path]
+        Lists of source and destination paths for the NWB file.
+    """
+    source_nwb_files = validate_nwb_file(source_session_path)
+    dest_nwb_files = _source_to_dest(source_nwb_files, source_base_path, dest_base_path)
+    _check_list_of_files_before_copy(source_nwb_files, dest_nwb_files, if_exists)
+    return source_nwb_files, dest_nwb_files
+
+# prepare copy pyaldata file
+def _prepare_copying_pyaldata_file(
+    source_session_path: Path,
+    source_base_path: Path,
+    dest_base_path: Path,
+    if_exists: str,
+):
+    """
+    Prepare copying PyalData file from the source to the destination.
+
+    Parameters
+    ----------
+    source_session_path : Path
+        Path to the session on the source computer.
+    source_base_path : Path
+        The root directory of the source data.
+    dest_base_path : Path
+        The root directory of the destination data.
+    if_exists: str
+        Behavior when the file already exists.
+
+    Returns
+    -------
+    source_pyaldata_files, dest_pyaldata_files : list[Path], list[Path]
+        Lists of source and destination paths for the PyalData file.
+    """
+    source_pyaldata_files = validate_pyaldata_file(source_session_path)
+    dest_pyaldata_files = _source_to_dest(source_pyaldata_files, source_base_path, dest_base_path)
+    _check_list_of_files_before_copy(source_pyaldata_files, dest_pyaldata_files, if_exists)
+    return source_pyaldata_files, dest_pyaldata_files
 
 
 @validate_argument("processing_level", ["raw", "processed"])
