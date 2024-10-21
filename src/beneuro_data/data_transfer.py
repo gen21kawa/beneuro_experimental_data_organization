@@ -12,6 +12,7 @@ from beneuro_data.data_validation import (
     validate_raw_ephys_data_of_session,
     validate_raw_session,
     validate_raw_videos_of_session,
+    validate_kilosort_output,
 )
 from beneuro_data.extra_file_handling import (
     _find_extra_files_with_extensions,
@@ -20,6 +21,7 @@ from beneuro_data.extra_file_handling import (
 )
 from beneuro_data.validate_argument import validate_argument
 from beneuro_data.video_renaming import rename_raw_videos_of_session
+
 
 
 def upload_raw_session(
@@ -35,6 +37,7 @@ def upload_raw_session(
     allowed_extensions_not_in_root: tuple[str, ...],
     rename_videos_first: bool,
     rename_extra_files_first: bool,
+    include_kilosort_output: bool = False,
 ) -> bool:
     """
     Uploads a raw session to the remote server.
@@ -69,7 +72,8 @@ def upload_raw_session(
     rename_extra_files_first : bool
         Whether to rename the extra files to the convention before uploading them.
         Results in `<session_name>_<original_filename>`
-
+    include_kilosort_output : bool
+        Whether to include the kilosort output files in the upload.
     Returns
     -------
     Returns True if the upload was successful, raises an error otherwise.
@@ -136,6 +140,14 @@ def upload_raw_session(
             remote_root,
             whitelisted_files_in_root,
             allowed_extensions_not_in_root,
+        )
+
+    if include_kilosort_output:
+        upload_kilosort_output(
+            local_session_path,
+            subject_name,
+            local_root,
+            remote_root,
         )
 
     return True
@@ -378,6 +390,18 @@ def upload_extra_files(
 
     return remote_file_paths
 
+def upload_kilosort_output(
+    local_session_path: Path,
+    subject_name: str,
+    local_root: Path,
+    remote_root: Path,
+) -> bool:
+    # Implement logic to upload Kilosort output
+    kilosort_files = validate_kilosort_output(local_session_path, subject_name)
+    remote_kilosort_files = _source_to_dest(kilosort_files, local_root, remote_root)
+    _copy_list_of_files(kilosort_files, remote_kilosort_files, if_exists="error_if_different")
+    return True
+
 
 def download_raw_session(
     remote_session_path: Path,
@@ -389,6 +413,7 @@ def download_raw_session(
     include_videos: bool,
     whitelisted_files_in_root: tuple[str, ...],
     allowed_extensions_not_in_root: tuple[str, ...],
+    include_kilosort_output: bool = False,
 ):
     """
     Downloads a raw session from the remote server to the local computer.
@@ -450,6 +475,19 @@ def download_raw_session(
             warnings.warn(f"Skipping videos because of: {type(e).__name__}: {e}")
             include_videos = False
 
+            # Handle Kilosort Output
+    if include_kilosort_output:
+        try:
+            remote_kilosort_files, local_kilosort_files = _prepare_copying_kilosort_output(
+                remote_session_path,
+                remote_base_path,
+                local_base_path,
+                if_exists=if_exists,
+            )
+        except Exception as e:
+            warnings.warn(f"Skipping Kilosort output because of: {type(e).__name__}: {e}")
+            include_kilosort_output = False
+
     # always try to include extra files
     try:
         remote_extra_files, local_extra_files = _prepare_copying_raw_extra_files(
@@ -461,6 +499,7 @@ def download_raw_session(
             if_exists,
         )
         include_extra_files = True
+
     except Exception as e:
         warnings.warn(f"Skipping extra files because of: {type(e).__name__}: {e}")
         include_extra_files = False
@@ -481,6 +520,10 @@ def download_raw_session(
         warnings.warn("Skipping extra files because they were not found. ")
         include_extra_files = False
 
+    if include_kilosort_output and len(remote_kilosort_files) == 0:
+        warnings.warn("Skipping Kilosort output because it was not found.")
+        include_kilosort_output = False
+
     if include_behavior:
         _copy_list_of_files(remote_behavior_files, local_behavior_files, if_exists)
     if include_ephys:
@@ -489,6 +532,9 @@ def download_raw_session(
         _copy_list_of_files(remote_video_files, local_video_files, if_exists)
     if include_extra_files:
         _copy_list_of_files(remote_extra_files, local_extra_files, if_exists)
+    if include_kilosort_output:
+        _copy_list_of_files(remote_kilosort_files, local_kilosort_files, if_exists)
+
 
     local_session_path = _source_to_dest(
         remote_session_path, remote_base_path, local_base_path
@@ -502,6 +548,7 @@ def download_raw_session(
         include_videos,
         whitelisted_files_in_root,
         allowed_extensions_not_in_root,
+        include_kilosort_output=include_kilosort_output
     )
 
     return local_session_path
@@ -635,6 +682,37 @@ def _prepare_copying_raw_extra_files(
     _check_list_of_files_before_copy(source_extra_files, dest_extra_files, if_exists)
 
     return source_extra_files, dest_extra_files
+
+
+def _prepare_copying_kilosort_output(
+    source_session_path: Path,
+    source_base_path: Path,
+    dest_base_path: Path,
+    if_exists: str,
+):
+    """
+    Prepare copying Kilosort output from the source to the destination.
+
+    Parameters
+    ----------
+    source_session_path : Path
+        Path to the session on the source computer.
+    source_base_path : Path
+        The root directory of the source data.
+    dest_base_path : Path
+        The root directory of the destination data.
+    if_exists: str
+        Behavior when the file already exists.
+
+    Returns
+    -------
+    source_kilosort_files, dest_kilosort_files : list[Path], list[Path]
+        Lists of source and destination paths for the Kilosort output files.
+    """
+    source_kilosort_files = validate_kilosort_output(source_session_path)
+    dest_kilosort_files = _source_to_dest(source_kilosort_files, source_base_path, dest_base_path)
+    _check_list_of_files_before_copy(source_kilosort_files, dest_kilosort_files, if_exists)
+    return source_kilosort_files, dest_kilosort_files
 
 
 @validate_argument("processing_level", ["raw", "processed"])
