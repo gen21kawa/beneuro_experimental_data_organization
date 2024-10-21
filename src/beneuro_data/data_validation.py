@@ -405,10 +405,11 @@ def validate_raw_ephys_recording(
         expected_filenames = {
             f"{gid_folder_path.name}_t0.{imec_str}{ending}" for ending in expected_endings
         }
-        found_filenames = {p.name for p in probe_folder.iterdir()}
-        if found_filenames != expected_filenames:
+        # Only include files in found_filenames
+        found_filenames = {p.name for p in probe_folder.iterdir() if p.is_file()}
+        if not expected_filenames.issubset(found_filenames):
             raise ValueError(
-                f"Files in probe directory do not match the expected pattern. {probe_folder}"
+                f"Expected files not found in probe directory: {probe_folder}"
             )
 
     return True
