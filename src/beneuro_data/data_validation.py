@@ -57,6 +57,7 @@ def validate_raw_session(
     behavior_files = []
     ephys_files = []
     video_files = []
+    kilosort_files = []
 
     if include_behavior:
         behavior_files = validate_raw_behavioral_data_of_session(
@@ -69,11 +70,11 @@ def validate_raw_session(
     if include_videos:
         video_files = validate_raw_videos_of_session(session_path, subject_name)
     if include_kilosort:
-        kilosort_files = validate_kilosort(session_path, subject_name)
+        kilosort_files = validate_kilosort(session_path)
 
     
 
-    return behavior_files, ephys_files, video_files
+    return behavior_files, ephys_files, video_files, kilosort_files
 
 
 def validate_date_format(extracted_date_str: str) -> bool:
@@ -522,7 +523,7 @@ def validate_raw_videos_of_session(
     return []
 
 
-def validate_kilosort(session_path: Path, subject_name: str) -> list[Path]:
+def validate_kilosort(session_path: Path) -> list[Path]:
     kilosort_files = []
     # Handle both possible folder structures
     # Structure 1
@@ -543,6 +544,7 @@ def validate_kilosort(session_path: Path, subject_name: str) -> list[Path]:
                 kilosort_folder = imec_folder / "Kilosort"
                 if kilosort_folder.exists():
                     kilosort_files.extend(kilosort_folder.glob("**/*"))
-    if not kilosort_files:
+
+    if len(kilosort_files) == 0:
         raise FileNotFoundError("No Kilosort output found.")
     return kilosort_files

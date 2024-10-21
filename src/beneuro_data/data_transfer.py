@@ -99,7 +99,7 @@ def upload_raw_session(
 
     # TODO maybe check separately to have the option to upload things that are valid
     # check everything we want to upload
-    behavior_files, ephys_files, video_files = validate_raw_session(
+    behavior_files, ephys_files, video_files, kilosort_files = validate_raw_session(
         local_session_path,
         subject_name,
         include_behavior,
@@ -142,10 +142,10 @@ def upload_raw_session(
             allowed_extensions_not_in_root,
         )
 
+
     if include_kilosort:
         upload_kilosort(
             local_session_path,
-            subject_name,
             local_root,
             remote_root,
         )
@@ -392,12 +392,11 @@ def upload_extra_files(
 
 def upload_kilosort(
     local_session_path: Path,
-    subject_name: str,
     local_root: Path,
     remote_root: Path,
 ) -> bool:
     # Implement logic to upload Kilosort output
-    kilosort_files = validate_kilosort(local_session_path, subject_name)
+    kilosort_files = validate_kilosort(local_session_path)
     remote_kilosort_files = _source_to_dest(kilosort_files, local_root, remote_root)
     _copy_list_of_files(kilosort_files, remote_kilosort_files, if_exists="error_if_different")
     return True
