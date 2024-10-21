@@ -22,6 +22,7 @@ def validate_raw_session(
     include_videos: bool,
     whitelisted_files_in_root: tuple[str, ...],
     allowed_extensions_not_in_root: tuple[str, ...],
+    include_kilosort_output: bool = False,
 ):
     """
     Validate the files of a raw session.
@@ -44,6 +45,8 @@ def validate_raw_session(
         A tuple of file extensions that are allowed in the session directory excluding the root level.
         E.g. (".txt", )
         For what's allowed in the root, use `whitelisted_files_in_root`.
+    include_kilosort_output : bool, default: False
+        Whether to upload the Kilosort output.
 
     Returns
     -------
@@ -65,6 +68,10 @@ def validate_raw_session(
         )
     if include_videos:
         video_files = validate_raw_videos_of_session(session_path, subject_name)
+    if include_kilosort_output:
+        kilosort_files = validate_kilosort_output(session_path, subject_name)
+        
+    
 
     return behavior_files, ephys_files, video_files
 
@@ -512,3 +519,29 @@ def validate_raw_videos_of_session(
         return [p for p in video_folder_path.glob("**/*") if p.is_file()]
 
     return []
+
+
+def validate_kilosort_output(session_path: Path, subject_name: str) -> list[Path]:
+    kilosort_files = []
+    # Handle both possible folder structures
+    # Structure 1
+    ephys_folder = session_path / f"{session_path.name}_ephys"
+    if ephys_folder.exists():
+        # Navigate to the relevant directories and collect files
+        for g_folder in ephys_folder.glob(f"{session_path.name}_g*"):
+            for imec_folder in g_folder.glob(f"{session_path.name}_g*_imec*"):
+                kilosort_folder = imec_folder / "sorter_output"
+                if kilosort_folder.exists():
+                    kilosort_files.extend(kilosort_folder.glob("**/*"))
+                # Also check for other related files
+                kilosort_files.extend(imec_folder.glob("spikeinterface_*.json"))
+    else:
+        # Structure 2
+        for g_folder in session_path.glob(f"{session_path.name}_g*"):
+            for imec_folder in g_folder.glob(f"{session_path.name}_g*_imec*"):
+                kilosort_folder = imec_folder / "Kilosort"
+                if kilosort_folder.exists():
+                    kilosort_files.extend(kilosort_folder.glob("**/*"))
+    if not kilosort_files:
+        raise FileNotFoundError("No Kilosort output found.")
+    return kilosort_files
