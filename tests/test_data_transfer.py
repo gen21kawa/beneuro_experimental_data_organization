@@ -163,6 +163,8 @@ class RawSessionUploadTestCase:
     include_videos: bool
     rename_videos_first: bool
     rename_extra_files_first: bool
+    include_nwb: bool = False
+    include_pyaldata: bool = False
     include_kilosort: bool = False
 
     @property
@@ -297,16 +299,16 @@ raw_session_upload_test_cases_without_renaming_first = [
     ),
     # with kilosort output
     RawSessionUploadTestCase(
-    yaml_name="M011_with_kilosort.yaml",
-    session_name="M011_2023_04_04_16_00",
-    expected_error=None,
-    error_message=None,
-    include_behavior=True,
-    include_ephys=True,
-    include_videos=True,
-    rename_videos_first=False,
-    rename_extra_files_first=False,
-    include_kilosort=True,
+        yaml_name="M011_with_kilosort.yaml",
+        session_name="M011_2023_04_04_16_00",
+        expected_error=None,
+        error_message=None,
+        include_behavior=True,
+        include_ephys=True,
+        include_videos=True,
+        rename_videos_first=False,
+        rename_extra_files_first=False,
+        include_kilosort=True,
     ),
     # without kilosort output
     RawSessionUploadTestCase(
@@ -321,6 +323,58 @@ raw_session_upload_test_cases_without_renaming_first = [
         rename_extra_files_first=False,
         include_kilosort=True,
     ),
+    # without nwb file
+    RawSessionUploadTestCase(
+        yaml_name="M011_without_nwb.yaml",
+        session_name="M011_2023_04_04_16_00",
+        expected_error=FileNotFoundError,
+        error_message="No NWB file found.",
+        include_behavior=True,
+        include_ephys=True,
+        include_videos=True,
+        rename_videos_first=False,
+        rename_extra_files_first=False,
+        include_nwb=True,
+    ),
+    # with nwb file
+    RawSessionUploadTestCase(
+        yaml_name="M011_with_nwb.yaml",
+        session_name="M011_2023_04_04_16_00",
+        expected_error=None,
+        error_message=None,
+        include_behavior=True,
+        include_ephys=True,
+        include_videos=True,
+        rename_videos_first=False,
+        rename_extra_files_first=False,
+        include_nwb=True,
+    ),
+    # without pyaldata file
+    RawSessionUploadTestCase(
+        yaml_name="M011_without_pyaldata.yaml",
+        session_name="M011_2023_04_04_16_00",
+        expected_error=FileNotFoundError,
+        error_message="No pyaldata file found.",
+        include_behavior=True,
+        include_ephys=True,
+        include_videos=True,
+        rename_videos_first=False,
+        rename_extra_files_first=False,
+        include_pyaldata=True,
+    ),
+    # with pyaldata file
+    RawSessionUploadTestCase(
+        yaml_name="M011_with_pyaldata.yaml",
+        session_name="M011_2023_04_04_16_00",
+        expected_error=None,
+        error_message=None,
+        include_behavior=True,
+        include_ephys=True,
+        include_videos=True,
+        rename_videos_first=False,
+        rename_extra_files_first=False,
+        include_pyaldata=True,
+    )
 ]
 
 raw_session_upload_test_cases_with_renaming_first = [
@@ -504,6 +558,8 @@ def test_upload_raw_session(tmp_path, test_case: RawSessionUploadTestCase):
             EXTENSIONS_TO_RENAME_AND_UPLOAD,
             test_case.rename_videos_first,
             test_case.rename_extra_files_first,
+            include_nwb=test_case.include_nwb,
+            include_pyaldata=test_case.include_pyaldata,
             include_kilosort=test_case.include_kilosort
         )
 
@@ -529,5 +585,7 @@ def test_upload_raw_session(tmp_path, test_case: RawSessionUploadTestCase):
                 EXTENSIONS_TO_RENAME_AND_UPLOAD,
                 test_case.rename_videos_first,
                 test_case.rename_extra_files_first,
+                include_nwb=test_case.include_nwb,
+                include_pyaldata=test_case.include_pyaldata
                 include_kilosort=test_case.include_kilosort
             )
