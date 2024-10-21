@@ -107,6 +107,7 @@ def upload_raw_session(
         include_videos,
         whitelisted_files_in_root,
         allowed_extensions_not_in_root,
+        include_kilosort=include_kilosort
     )
 
     if include_behavior:
@@ -141,7 +142,6 @@ def upload_raw_session(
             whitelisted_files_in_root,
             allowed_extensions_not_in_root,
         )
-
 
     if include_kilosort:
         upload_kilosort(

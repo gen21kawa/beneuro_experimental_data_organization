@@ -529,4 +529,5 @@ def test_upload_raw_session(tmp_path, test_case: RawSessionUploadTestCase):
                 EXTENSIONS_TO_RENAME_AND_UPLOAD,
                 test_case.rename_videos_first,
                 test_case.rename_extra_files_first,
+                include_kilosort=test_case.include_kilosort
             )
