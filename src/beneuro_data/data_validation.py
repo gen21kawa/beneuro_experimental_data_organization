@@ -548,3 +548,19 @@ def validate_kilosort(session_path: Path) -> list[Path]:
     if len(kilosort_files) == 0:
         raise FileNotFoundError("No Kilosort output found.")
     return kilosort_files
+
+def validate_nwb_file(session_path: Path, subject_name: str) -> list[Path]:
+    expected_nwb_filename = f"{session_path.name}.nwb"
+    nwb_file = session_path / expected_nwb_filename
+    if not nwb_file.exists():
+        raise FileNotFoundError(f"NWB file not found: {nwb_file}")
+    return [nwb_file]
+
+def validate_pyaldata_file(session_path: Path, subject_name: str) -> list[Path]:
+    expected_pyaldata_filename = f"{session_path.name}_pyaldata.mat"
+    pyaldata_file = session_path / expected_pyaldata_filename
+    if not pyaldata_file.exists():
+        raise FileNotFoundError(f"PyalData file not found: {pyaldata_file}")
+    # Additional validation can be added here
+    return [pyaldata_file]
+

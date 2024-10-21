@@ -37,6 +37,8 @@ def upload_raw_session(
     allowed_extensions_not_in_root: tuple[str, ...],
     rename_videos_first: bool,
     rename_extra_files_first: bool,
+    include_nwb: bool = False,
+    include_pyaldata: bool = False,
     include_kilosort: bool = False,
 ) -> bool:
     """
@@ -72,6 +74,10 @@ def upload_raw_session(
     rename_extra_files_first : bool
         Whether to rename the extra files to the convention before uploading them.
         Results in `<session_name>_<original_filename>`
+    include_nwb : bool
+        Whether to include the NWB file in the upload.
+    include_pyaldata : bool
+        Whether to include the PyALData output files in the upload.
     include_kilosort : bool
         Whether to include the kilosort output files in the upload.
     Returns
@@ -142,7 +148,20 @@ def upload_raw_session(
             whitelisted_files_in_root,
             allowed_extensions_not_in_root,
         )
-
+    if include_nwb:
+        upload_nwb_file(
+            local_session_path,
+            subject_name,
+            local_root,
+            remote_root,
+        )
+    if include_pyaldata:
+        upload_pyaldata_file(
+            local_session_path,
+            subject_name,
+            local_root,
+            remote_root,
+        )
     if include_kilosort:
         upload_kilosort(
             local_session_path,
@@ -401,6 +420,33 @@ def upload_kilosort(
     _copy_list_of_files(kilosort_files, remote_kilosort_files, if_exists="error_if_different")
     return True
 
+def upload_nwb_file(
+    local_session_path: Path,
+    subject_name: str,
+    local_root: Path,
+    remote_root: Path,
+) -> bool:
+    # Implement logic to upload NWB files
+    # Validate NWB file
+    nwb_files = validate_nwb_file(local_session_path, subject_name)
+    # Prepare paths
+    remote_nwb_files = _source_to_dest(nwb_files, local_root, remote_root)
+    # Copy files
+    _copy_list_of_files(nwb_files, remote_nwb_files, if_exists="error_if_different")
+    return True
+
+def upload_pyaldata_file(
+    local_session_path: Path,
+    subject_name: str,
+    local_root: Path,
+    remote_root: Path,
+) -> bool:
+    # Implement logic to upload PyalData files
+    pyaldata_files = validate_pyaldata_file(local_session_path, subject_name)
+    remote_pyaldata_files = _source_to_dest(pyaldata_files, local_root, remote_root)
+    _copy_list_of_files(pyaldata_files, remote_pyaldata_files, if_exists="error_if_different")
+    return True
+
 
 def download_raw_session(
     remote_session_path: Path,
@@ -412,6 +458,8 @@ def download_raw_session(
     include_videos: bool,
     whitelisted_files_in_root: tuple[str, ...],
     allowed_extensions_not_in_root: tuple[str, ...],
+    include_nwb: bool = False,
+    include_pyaldata: bool = False,
     include_kilosort: bool = False,
 ):
     """

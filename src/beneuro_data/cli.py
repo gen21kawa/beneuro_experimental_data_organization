@@ -222,7 +222,21 @@ def download_last(
             "--include-kilosort-output/--ignore-kilosort-output",
             help="Upload Kilosort output or not.",
         ),
-    ] = False
+    ] = None,
+    include_nwb: Annotated[
+        bool,
+        typer.Option(
+            "--include-nwb/--ignore-nwb",
+            help="Download NWB files or not.",
+        ),
+    ] = None,
+    include_pyaldata: Annotated[
+        bool,
+        typer.Option(
+            "--include-pyaldata/--ignore-pyaldata",
+            help="Download PyalData files or not.",
+        ),
+    ] = None
 ):
     """
     Download (raw) experimental data in the last session of a subject from the remote server.
@@ -256,8 +270,12 @@ def download_last(
         include_videos = typer.confirm("Include videos?")
     if include_kilosort is None:
         include_kilosort = typer.confirm("Include Kilosort output?")
+    if include_nwb is None:
+        include_nwb = typer.confirm("Include NWB files?")
+    if include_pyaldata is None:
+        include_pyaldata = typer.confirm("Include PyalData files?")
 
-    if all([not include_behavior, not include_ephys, not include_videos, not include_kilosort]):
+    if all([not include_behavior, not include_ephys, not include_videos, not include_kilosort, not include_nwb, not include_pyaldata]):
         raise ValueError("At least one data type must be included.")
 
     download_raw_session(
@@ -270,6 +288,8 @@ def download_last(
         include_videos,
         config.WHITELISTED_FILES_IN_ROOT,
         config.EXTENSIONS_TO_RENAME_AND_UPLOAD,
+        include_nwb=include_nwb,
+        include_pyaldata=include_pyaldata,
         include_kilosort=include_kilosort
     )
 
@@ -329,6 +349,20 @@ def download_session(
             "--include-kilosort-output/--ignore-kilosort-output",
             help="Upload Kilosort output or not.",
         ),
+    ] = False,
+    include_nwb: Annotated[
+        bool,
+        typer.Option(
+            "--include-nwb/--ignore-nwb",
+            help="Download NWB files or not.",
+        ),
+    ] = False,
+    include_pyaldata: Annotated[
+        bool,
+        typer.Option(
+            "--include-pyaldata/--ignore-pyaldata",
+            help="Download PyalData files or not.",
+        ),
     ] = False
 ):
     """
@@ -340,7 +374,7 @@ def download_session(
     if processing_level != "raw":
         raise NotImplementedError("Sorry, only raw data is supported for now.")
 
-    if all([not include_behavior, not include_ephys, not include_videos, not include_kilosort]):
+    if all([not include_behavior, not include_ephys, not include_videos, not include_kilosort, not include_nwb, not include_pyaldata]):
         raise ValueError("At least one data type must be included.")
 
     config = _load_config()
@@ -355,6 +389,8 @@ def download_session(
         include_videos,
         config.WHITELISTED_FILES_IN_ROOT,
         config.EXTENSIONS_TO_RENAME_AND_UPLOAD,
+        include_nwb=include_nwb,
+        include_pyaldata=include_pyaldata,
         include_kilosort=include_kilosort
     )
 
@@ -400,6 +436,22 @@ def dl(
             "-k/-K",
             help="Upload Kilosort output (-k) or not (-K).",
         ),
+    ] = False,
+    include_nwb: Annotated[
+        bool,
+        typer.Option(
+            "--include-nwb/--ignore-nwb",
+            "-n/-N",
+            help="Download NWB files (-n) or not (-N).",
+        ),
+    ] = False,
+    include_pyaldata: Annotated[
+        bool,
+        typer.Option(
+            "--include-pyaldata/--ignore-pyaldata",
+            "-p/-P",
+            help="Download PyalData files (-p) or not (-P).",
+        ),
     ] = False
 ):
     """
@@ -412,7 +464,7 @@ def dl(
     if processing_level != "raw":
         raise NotImplementedError("Sorry, only raw data is supported for now.")
 
-    if all([not include_behavior, not include_ephys, not include_videos, not include_kilosort]):
+    if all([not include_behavior, not include_ephys, not include_videos, not include_kilosort, not include_nwb, not include_pyaldata]):
         raise ValueError("At least one data type must be included.")
 
     config = _load_config()
@@ -427,6 +479,8 @@ def dl(
         include_videos=include_videos,
         whitelisted_files_in_root=config.WHITELISTED_FILES_IN_ROOT,
         allowed_extensions_not_in_root=config.EXTENSIONS_TO_RENAME_AND_UPLOAD,
+        include_nwb=include_nwb,
+        include_pyaldata=include_pyaldata,
         include_kilosort=include_kilosort
     )
     print(f"Session {session_name} downloaded.")
@@ -552,6 +606,20 @@ def validate_session(
             "--check-kilosort-output/--ignore-kilosort-output",
             help="Check Kilosort output or not.",
         ),
+    ] = False,
+    check_nwb: Annotated[
+        bool,
+        typer.Option(
+            "--check-nwb/--ignore-nwb",
+            help="Check NWB files or not.",
+        ),
+    ] = False,
+    check_pyaldata: Annotated[
+        bool,
+        typer.Option(
+            "--check-pyaldata/--ignore-pyaldata",
+            help="Check PyalData files or not.",
+        ),
     ] = False
 ):
     """
@@ -564,7 +632,7 @@ def validate_session(
     if processing_level != "raw":
         raise NotImplementedError("Sorry, only raw data is supported for now.")
 
-    if all([not check_behavior, not check_ephys, not check_videos, not check_kilosort]):
+    if all([not check_behavior, not check_ephys, not check_videos, not check_kilosort, not check_nwb, not check_pyaldata]):
         raise ValueError("At least one data type must be checked.")
 
     if not session_path.absolute().is_dir():
@@ -582,6 +650,8 @@ def validate_session(
         check_videos,
         config.WHITELISTED_FILES_IN_ROOT,
         config.EXTENSIONS_TO_RENAME_AND_UPLOAD,
+        check_nwb=check_nwb,
+        check_pyaldata=check_pyaldata,
         check_kilosort=check_kilosort
     )
 
@@ -621,6 +691,20 @@ def validate_last(
             "--check-kilosort-output/--ignore-kilosort-output",
             help="Check Kilosort output or not.",
         ),
+    ] = False,
+    check_nwb: Annotated[
+        bool,
+        typer.Option(
+            "--check-nwb/--ignore-nwb",
+            help="Check NWB files or not.",
+        ),
+    ] = False,
+    check_pyaldata: Annotated[
+        bool,
+        typer.Option(
+            "--check-pyaldata/--ignore-pyaldata",
+            help="Check PyalData files or not.",
+        ),
     ] = False
 ):
     """
@@ -632,7 +716,7 @@ def validate_last(
     if processing_level != "raw":
         raise NotImplementedError("Sorry, only raw data is supported for now.")
 
-    if all([not check_behavior, not check_ephys, not check_videos, not check_kilosort]):
+    if all([not check_behavior, not check_ephys, not check_videos, not check_kilosort, not check_nwb, not check_pyaldata]):
         raise ValueError("At least one data type must be checked.")
 
     config = _load_config()
@@ -654,6 +738,8 @@ def validate_last(
         check_videos,
         config.WHITELISTED_FILES_IN_ROOT,
         config.EXTENSIONS_TO_RENAME_AND_UPLOAD,
+        check_nwb=check_nwb,
+        check_pyaldata=check_pyaldata,
         check_kilosort=check_kilosort
     )
 
@@ -896,6 +982,22 @@ def up(
     processing_level: Annotated[
         str, typer.Argument(help="Processing level of the session. raw or processed.")
     ] = "raw",
+    include_nwb: Annotated[
+        bool,
+        typer.Option(
+            "--include-nwb/--ignore-nwb",
+            "-n/-N",
+            help="Upload NWB files (-n) or not (-N).",
+        ),
+    ] = False,
+    include_pyaldata: Annotated[
+        bool,
+        typer.Option(
+            "--include-pyaldata/--ignore-pyaldata",
+            "-p/-P",
+            help="Upload PyalData files (-p) or not (-P).",
+        ),
+    ] = False,
     include_kilosort: Annotated[
         bool,
         typer.Option(
@@ -918,7 +1020,7 @@ def up(
     if processing_level != "raw":
         raise NotImplementedError("Sorry, only raw data is supported for now.")
 
-    if all([not include_behavior, not include_ephys, not include_videos, not include_kilosort]):
+    if all([not include_behavior, not include_ephys, not include_videos, not include_nwb, not include_pyaldata, not include_kilosort]):
         raise ValueError("At least one data type must be included.")
 
     # if videos are included, rename them first if not specified otherwise
@@ -946,6 +1048,8 @@ def up(
             config.EXTENSIONS_TO_RENAME_AND_UPLOAD,
             rename_videos_first,
             rename_extra_files_first,
+            include_nwb=include_nwb,
+            include_pyaldata=include_pyaldata,
             include_kilosort=include_kilosort
         )
         message = f"Session {session_or_animal_name} uploaded."
@@ -959,6 +1063,8 @@ def up(
             rename_videos_first,
             rename_extra_files_first,
             processing_level,
+            include_nwb=include_nwb,
+            include_pyaldata=include_pyaldata,
             include_kilosort=include_kilosort
         )
         message = f"Last session of {animal} uploaded."
@@ -1019,6 +1125,20 @@ def upload_last(
     processing_level: Annotated[
         str, typer.Argument(help="Processing level of the session. raw or processed.")
     ] = "raw",
+    include_nwb: Annotated[
+        bool,
+        typer.Option(
+            "--include-nwb/--ignore-nwb",
+            help="Upload NWB files or not.",
+        ),
+    ] = None,
+    include_pyaldata: Annotated[
+        bool,
+        typer.Option(
+            "--include-pyaldata/--ignore-pyaldata",
+            help="Upload PyalData files or not.",
+        ),
+    ] = None,
     include_kilosort: Annotated[
         bool,
         typer.Option(
@@ -1060,8 +1180,12 @@ def upload_last(
         include_videos = typer.confirm("Include videos?")
     if include_kilosort is None:
         include_kilosort = typer.confirm("Include Kilosort output?")
+    if include_nwb is None:
+        include_nwb = typer.confirm("Include NWB files?")
+    if include_pyaldata is None:
+        include_pyaldata = typer.confirm("Include PyalData files?")
 
-    if all([not include_behavior, not include_ephys, not include_videos]):
+    if all([not include_behavior, not include_ephys, not include_videos, not include_kilosort, not include_nwb, not include_pyaldata]):
         raise ValueError("At least one data type must be included.")
 
     # if videos are included, rename them first if not specified otherwise
@@ -1086,6 +1210,8 @@ def upload_last(
         config.EXTENSIONS_TO_RENAME_AND_UPLOAD,
         rename_videos_first,
         rename_extra_files_first,
+        include_nwb=include_nwb,
+        include_pyaldata=include_pyaldata,
         include_kilosort=include_kilosort
     )
 
