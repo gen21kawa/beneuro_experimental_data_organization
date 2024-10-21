@@ -216,7 +216,7 @@ def download_last(
     processing_level: Annotated[
         str, typer.Argument(help="Processing level of the session. raw or processed.")
     ] = "raw",
-    include_kilosort_output: Annotated[
+    include_kilosort: Annotated[
         bool,
         typer.Option(
             "--include-kilosort-output/--ignore-kilosort-output",
@@ -254,10 +254,10 @@ def download_last(
         include_ephys = typer.confirm("Include ephys?")
     if include_videos is None:
         include_videos = typer.confirm("Include videos?")
-    if include_kilosort_output is None:
-        include_kilosort_output = typer.confirm("Include Kilosort output?")
+    if include_kilosort is None:
+        include_kilosort = typer.confirm("Include Kilosort output?")
 
-    if all([not include_behavior, not include_ephys, not include_videos, not include_kilosort_output]):
+    if all([not include_behavior, not include_ephys, not include_videos, not include_kilosort]):
         raise ValueError("At least one data type must be included.")
 
     download_raw_session(
@@ -270,7 +270,7 @@ def download_last(
         include_videos,
         config.WHITELISTED_FILES_IN_ROOT,
         config.EXTENSIONS_TO_RENAME_AND_UPLOAD,
-        include_kilosort_output=include_kilosort_output
+        include_kilosort=include_kilosort
     )
 
     return True
@@ -323,7 +323,7 @@ def download_session(
     processing_level: Annotated[
         str, typer.Argument(help="Processing level of the session. raw or processed.")
     ] = "raw",
-    include_kilosort_output: Annotated[
+    include_kilosort: Annotated[
         bool,
         typer.Option(
             "--include-kilosort-output/--ignore-kilosort-output",
@@ -340,7 +340,7 @@ def download_session(
     if processing_level != "raw":
         raise NotImplementedError("Sorry, only raw data is supported for now.")
 
-    if all([not include_behavior, not include_ephys, not include_videos, not include_kilosort_output]):
+    if all([not include_behavior, not include_ephys, not include_videos, not include_kilosort]):
         raise ValueError("At least one data type must be included.")
 
     config = _load_config()
@@ -355,7 +355,7 @@ def download_session(
         include_videos,
         config.WHITELISTED_FILES_IN_ROOT,
         config.EXTENSIONS_TO_RENAME_AND_UPLOAD,
-        include_kilosort_output=include_kilosort_output
+        include_kilosort=include_kilosort
     )
 
     return True
@@ -393,7 +393,7 @@ def dl(
     processing_level: Annotated[
         str, typer.Argument(help="Processing level of the session. raw or processed.")
     ] = "raw",
-    include_kilosort_output: Annotated[
+    include_kilosort: Annotated[
         bool,
         typer.Option(
             "--include-kilosort-output/--ignore-kilosort-output",
@@ -412,7 +412,7 @@ def dl(
     if processing_level != "raw":
         raise NotImplementedError("Sorry, only raw data is supported for now.")
 
-    if all([not include_behavior, not include_ephys, not include_videos, not include_kilosort_output]):
+    if all([not include_behavior, not include_ephys, not include_videos, not include_kilosort]):
         raise ValueError("At least one data type must be included.")
 
     config = _load_config()
@@ -427,7 +427,7 @@ def dl(
         include_videos=include_videos,
         whitelisted_files_in_root=config.WHITELISTED_FILES_IN_ROOT,
         allowed_extensions_not_in_root=config.EXTENSIONS_TO_RENAME_AND_UPLOAD,
-        include_kilosort_output=include_kilosort_output
+        include_kilosort=include_kilosort
     )
     print(f"Session {session_name} downloaded.")
 
@@ -546,7 +546,7 @@ def validate_session(
         bool,
         typer.Option("--check-videos/--ignore-videos", help="Check videos data or not."),
     ] = True,
-    check_kilosort_output: Annotated[
+    check_kilosort: Annotated[
         bool,
         typer.Option(
             "--check-kilosort-output/--ignore-kilosort-output",
@@ -564,7 +564,7 @@ def validate_session(
     if processing_level != "raw":
         raise NotImplementedError("Sorry, only raw data is supported for now.")
 
-    if all([not check_behavior, not check_ephys, not check_videos, not check_kilosort_output]):
+    if all([not check_behavior, not check_ephys, not check_videos, not check_kilosort]):
         raise ValueError("At least one data type must be checked.")
 
     if not session_path.absolute().is_dir():
@@ -582,7 +582,7 @@ def validate_session(
         check_videos,
         config.WHITELISTED_FILES_IN_ROOT,
         config.EXTENSIONS_TO_RENAME_AND_UPLOAD,
-        check_kilosort_output=check_kilosort_output
+        check_kilosort=check_kilosort
     )
 
 
@@ -615,7 +615,7 @@ def validate_last(
         bool,
         typer.Option("--check-videos/--ignore-videos", help="Check videos data or not."),
     ] = True,
-    check_kilosort_output: Annotated[
+    check_kilosort: Annotated[
         bool,
         typer.Option(
             "--check-kilosort-output/--ignore-kilosort-output",
@@ -632,7 +632,7 @@ def validate_last(
     if processing_level != "raw":
         raise NotImplementedError("Sorry, only raw data is supported for now.")
 
-    if all([not check_behavior, not check_ephys, not check_videos, not check_kilosort_output]):
+    if all([not check_behavior, not check_ephys, not check_videos, not check_kilosort]):
         raise ValueError("At least one data type must be checked.")
 
     config = _load_config()
@@ -654,7 +654,7 @@ def validate_last(
         check_videos,
         config.WHITELISTED_FILES_IN_ROOT,
         config.EXTENSIONS_TO_RENAME_AND_UPLOAD,
-        check_kilosort_output=check_kilosort_output
+        check_kilosort=check_kilosort
     )
 
 
@@ -793,7 +793,7 @@ def upload_session(
     processing_level: Annotated[
         str, typer.Argument(help="Processing level of the session. raw or processed.")
     ] = "raw",
-    include_kilosort_output: Annotated[
+    include_kilosort: Annotated[
         bool,
         typer.Option(
             "--include-kilosort-output/--ignore-kilosort-output",
@@ -810,7 +810,7 @@ def upload_session(
     if processing_level != "raw":
         raise NotImplementedError("Sorry, only raw data is supported for now.")
 
-    if all([not include_behavior, not include_ephys, not include_videos, not include_kilosort_output]):
+    if all([not include_behavior, not include_ephys, not include_videos, not include_kilosort]):
         raise ValueError("At least one data type must be included.")
 
     # if videos are included, rename them first if not specified otherwise
@@ -837,7 +837,7 @@ def upload_session(
         config.EXTENSIONS_TO_RENAME_AND_UPLOAD,
         rename_videos_first,
         rename_extra_files_first,
-        include_kilosort_output=include_kilosort_output
+        include_kilosort=include_kilosort
     )
 
     return True
@@ -896,7 +896,7 @@ def up(
     processing_level: Annotated[
         str, typer.Argument(help="Processing level of the session. raw or processed.")
     ] = "raw",
-    include_kilosort_output: Annotated[
+    include_kilosort: Annotated[
         bool,
         typer.Option(
             "--include-kilosort-output/--ignore-kilosort-output",
@@ -918,7 +918,7 @@ def up(
     if processing_level != "raw":
         raise NotImplementedError("Sorry, only raw data is supported for now.")
 
-    if all([not include_behavior, not include_ephys, not include_videos, not include_kilosort_output]):
+    if all([not include_behavior, not include_ephys, not include_videos, not include_kilosort]):
         raise ValueError("At least one data type must be included.")
 
     # if videos are included, rename them first if not specified otherwise
@@ -946,7 +946,7 @@ def up(
             config.EXTENSIONS_TO_RENAME_AND_UPLOAD,
             rename_videos_first,
             rename_extra_files_first,
-            include_kilosort_output=include_kilosort_output
+            include_kilosort=include_kilosort
         )
         message = f"Session {session_or_animal_name} uploaded."
     else:  # only animal name is given
@@ -959,7 +959,7 @@ def up(
             rename_videos_first,
             rename_extra_files_first,
             processing_level,
-            include_kilosort_output=include_kilosort_output
+            include_kilosort=include_kilosort
         )
         message = f"Last session of {animal} uploaded."
     if up_done:
@@ -1019,7 +1019,7 @@ def upload_last(
     processing_level: Annotated[
         str, typer.Argument(help="Processing level of the session. raw or processed.")
     ] = "raw",
-    include_kilosort_output: Annotated[
+    include_kilosort: Annotated[
         bool,
         typer.Option(
             "--include-kilosort-output/--ignore-kilosort-output",
@@ -1058,8 +1058,8 @@ def upload_last(
         include_ephys = typer.confirm("Include ephys?")
     if include_videos is None:
         include_videos = typer.confirm("Include videos?")
-    if include_kilosort_output is None:
-        include_kilosort_output = typer.confirm("Include Kilosort output?")
+    if include_kilosort is None:
+        include_kilosort = typer.confirm("Include Kilosort output?")
 
     if all([not include_behavior, not include_ephys, not include_videos]):
         raise ValueError("At least one data type must be included.")
@@ -1086,7 +1086,7 @@ def upload_last(
         config.EXTENSIONS_TO_RENAME_AND_UPLOAD,
         rename_videos_first,
         rename_extra_files_first,
-        include_kilosort_output=include_kilosort_output
+        include_kilosort=include_kilosort
     )
 
     return True

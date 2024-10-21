@@ -22,7 +22,7 @@ def validate_raw_session(
     include_videos: bool,
     whitelisted_files_in_root: tuple[str, ...],
     allowed_extensions_not_in_root: tuple[str, ...],
-    include_kilosort_output: bool = False,
+    include_kilosort: bool = False,
 ):
     """
     Validate the files of a raw session.
@@ -45,7 +45,7 @@ def validate_raw_session(
         A tuple of file extensions that are allowed in the session directory excluding the root level.
         E.g. (".txt", )
         For what's allowed in the root, use `whitelisted_files_in_root`.
-    include_kilosort_output : bool, default: False
+    include_kilosort : bool, default: False
         Whether to upload the Kilosort output.
 
     Returns
@@ -68,9 +68,9 @@ def validate_raw_session(
         )
     if include_videos:
         video_files = validate_raw_videos_of_session(session_path, subject_name)
-    if include_kilosort_output:
-        kilosort_files = validate_kilosort_output(session_path, subject_name)
-        
+    if include_kilosort:
+        kilosort_files = validate_kilosort(session_path, subject_name)
+
     
 
     return behavior_files, ephys_files, video_files
@@ -521,7 +521,7 @@ def validate_raw_videos_of_session(
     return []
 
 
-def validate_kilosort_output(session_path: Path, subject_name: str) -> list[Path]:
+def validate_kilosort(session_path: Path, subject_name: str) -> list[Path]:
     kilosort_files = []
     # Handle both possible folder structures
     # Structure 1
