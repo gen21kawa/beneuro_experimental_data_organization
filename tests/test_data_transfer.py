@@ -163,6 +163,7 @@ class RawSessionUploadTestCase:
     include_videos: bool
     rename_videos_first: bool
     rename_extra_files_first: bool
+    include_kilosort: bool = False
 
     @property
     def mouse_name(self) -> str:
@@ -293,6 +294,32 @@ raw_session_upload_test_cases_without_renaming_first = [
         True,
         False,
         False,
+    ),
+    # with kilosort output
+    RawSessionUploadTestCase(
+    yaml_name="M011_with_kilosort.yaml",
+    session_name="M011_2023_04_04_16_00",
+    expected_error=None,
+    error_message=None,
+    include_behavior=True,
+    include_ephys=True,
+    include_videos=True,
+    rename_videos_first=False,
+    rename_extra_files_first=False,
+    include_kilosort=True,
+    ),
+    # without kilosort output
+    RawSessionUploadTestCase(
+        yaml_name="M011_without_kilosort.yaml",
+        session_name="M011_2023_04_04_16_00",
+        expected_error=FileNotFoundError,
+        error_message="No Kilosort output found.",
+        include_behavior=True,
+        include_ephys=True,
+        include_videos=True,
+        rename_videos_first=False,
+        rename_extra_files_first=False,
+        include_kilosort=True,
     ),
 ]
 
@@ -477,6 +504,7 @@ def test_upload_raw_session(tmp_path, test_case: RawSessionUploadTestCase):
             EXTENSIONS_TO_RENAME_AND_UPLOAD,
             test_case.rename_videos_first,
             test_case.rename_extra_files_first,
+            include_kilosort=test_case.include_kilosort
         )
 
         import filecmp
@@ -501,4 +529,5 @@ def test_upload_raw_session(tmp_path, test_case: RawSessionUploadTestCase):
                 EXTENSIONS_TO_RENAME_AND_UPLOAD,
                 test_case.rename_videos_first,
                 test_case.rename_extra_files_first,
+                include_kilosort=test_case.include_kilosort
             )

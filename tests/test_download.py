@@ -26,6 +26,7 @@ class RawSessionDownloadTestCase:
     include_behavior: bool
     include_ephys: bool
     include_videos: bool
+    include_kilosort: bool = False
 
     @property
     def mouse_name(self) -> str:
@@ -90,6 +91,29 @@ session_download_test_cases = [
     #    True,
     #    True,
     # ),
+    # with kilosort
+    RawSessionDownloadTestCase(
+    yaml_name="M011_with_kilosort.yaml",
+    session_name="M011_2023_04_04_16_00",
+    expected_error=None,
+    error_message=None,
+    include_behavior=True,
+    include_ephys=True,
+    include_videos=True,
+    include_kilosort=True,
+    ),
+    # without kilosort
+    RawSessionDownloadTestCase(
+        yaml_name="M011_without_kilosort.yaml",
+        session_name="M011_2023_04_04_16_00",
+        expected_error=FileNotFoundError,
+        error_message="No Kilosort output found.",
+        include_behavior=True,
+        include_ephys=True,
+        include_videos=True,
+        include_kilosort=True,
+    ),
+
 ]
 
 
@@ -126,6 +150,7 @@ def test_download_raw_session(tmp_path, test_case: RawSessionDownloadTestCase):
             test_case.include_videos,
             WHITELISTED_FILES_IN_ROOT,
             EXTENSIONS_TO_RENAME_AND_UPLOAD,
+            include_kilosort = test_case.include_kilosort
         )
 
         import filecmp

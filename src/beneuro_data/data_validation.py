@@ -22,6 +22,7 @@ def validate_raw_session(
     include_videos: bool,
     whitelisted_files_in_root: tuple[str, ...],
     allowed_extensions_not_in_root: tuple[str, ...],
+    include_kilosort: bool = False,
 ):
     """
     Validate the files of a raw session.
@@ -44,6 +45,8 @@ def validate_raw_session(
         A tuple of file extensions that are allowed in the session directory excluding the root level.
         E.g. (".txt", )
         For what's allowed in the root, use `whitelisted_files_in_root`.
+    include_kilosort : bool, default: False
+        Whether to upload the Kilosort output.
 
     Returns
     -------
@@ -54,6 +57,7 @@ def validate_raw_session(
     behavior_files = []
     ephys_files = []
     video_files = []
+    kilosort_files = []
 
     if include_behavior:
         behavior_files = validate_raw_behavioral_data_of_session(
@@ -65,8 +69,12 @@ def validate_raw_session(
         )
     if include_videos:
         video_files = validate_raw_videos_of_session(session_path, subject_name)
+    if include_kilosort:
+        kilosort_files = validate_kilosort(session_path)
 
-    return behavior_files, ephys_files, video_files
+    
+
+    return behavior_files, ephys_files, video_files, kilosort_files
 
 
 def validate_date_format(extracted_date_str: str) -> bool:
@@ -398,10 +406,11 @@ def validate_raw_ephys_recording(
         expected_filenames = {
             f"{gid_folder_path.name}_t0.{imec_str}{ending}" for ending in expected_endings
         }
-        found_filenames = {p.name for p in probe_folder.iterdir()}
-        if found_filenames != expected_filenames:
+        # Only include files in found_filenames
+        found_filenames = {p.name for p in probe_folder.iterdir() if p.is_file()}
+        if not expected_filenames.issubset(found_filenames):
             raise ValueError(
-                f"Files in probe directory do not match the expected pattern. {probe_folder}"
+                f"Expected files not found in probe directory: {probe_folder}"
             )
 
     return True
@@ -512,3 +521,30 @@ def validate_raw_videos_of_session(
         return [p for p in video_folder_path.glob("**/*") if p.is_file()]
 
     return []
+
+
+def validate_kilosort(session_path: Path) -> list[Path]:
+    kilosort_files = []
+    # Handle both possible folder structures
+    # Structure 1
+    ephys_folder = session_path / f"{session_path.name}_ephys"
+    if ephys_folder.exists():
+        # Navigate to the relevant directories and collect files
+        for g_folder in ephys_folder.glob(f"{session_path.name}_g*"):
+            for imec_folder in g_folder.glob(f"{session_path.name}_g*_imec*"):
+                kilosort_folder = imec_folder / "sorter_output"
+                if kilosort_folder.exists():
+                    kilosort_files.extend(kilosort_folder.glob("**/*"))
+                # Also check for other related files
+                kilosort_files.extend(imec_folder.glob("spikeinterface_*.json"))
+    else:
+        # Structure 2
+        for g_folder in session_path.glob(f"{session_path.name}_g*"):
+            for imec_folder in g_folder.glob(f"{session_path.name}_g*_imec*"):
+                kilosort_folder = imec_folder / "Kilosort"
+                if kilosort_folder.exists():
+                    kilosort_files.extend(kilosort_folder.glob("**/*"))
+
+    if len(kilosort_files) == 0:
+        raise FileNotFoundError("No Kilosort output found.")
+    return kilosort_files
