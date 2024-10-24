@@ -113,7 +113,7 @@ def convert_to_nwb(
         raise ValueError(f"{raw_session_path} is not in {base_path / 'raw'}")
 
     # validate session before doing any conversion
-    _, ephys_files, _ = validate_raw_session(
+    _, ephys_files, _, _ = validate_raw_session(
         raw_session_path,
         subject_name,
         include_behavior=True,
