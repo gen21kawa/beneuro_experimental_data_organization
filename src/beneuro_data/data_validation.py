@@ -72,8 +72,6 @@ def validate_raw_session(
     if include_kilosort:
         kilosort_files = validate_kilosort(session_path)
 
-    
-
     return behavior_files, ephys_files, video_files, kilosort_files
 
 
@@ -409,9 +407,7 @@ def validate_raw_ephys_recording(
         # Only include files in found_filenames
         found_filenames = {p.name for p in probe_folder.iterdir() if p.is_file()}
         if not expected_filenames.issubset(found_filenames):
-            raise ValueError(
-                f"Expected files not found in probe directory: {probe_folder}"
-            )
+            raise ValueError(f"Expected files not found in probe directory: {probe_folder}")
 
     return True
 

@@ -1131,6 +1131,13 @@ def validate_sessions(
             help="Rename extra files (e.g. comment.txt) before validating and uploading.",
         ),
     ] = True,
+    check_kilosort: Annotated[
+        bool,
+        typer.Option(
+            "--check-kilosort-output/--ignore-kilosort-output",
+            help="Check Kilosort output or not.",
+        ),
+    ] = False
 ):
     """
     Validate (raw) experimental data in all sessions of a given subject.
@@ -1162,6 +1169,7 @@ def validate_sessions(
                     config.EXTENSIONS_TO_RENAME_AND_UPLOAD,
                     rename_videos_first,
                     rename_extra_files_first,
+                    check_kilosort=check_kilosort
                 )
             except Exception as e:
                 print(f"[bold red]Problem with {session_path.name}: {e.args[0]}\n")
@@ -1227,6 +1235,13 @@ def validate_today(
         bool,
         typer.Option("--check-videos/--ignore-videos", help="Check videos data or not."),
     ] = True,
+    check_kilosort: Annotated[
+        bool,
+        typer.Option(
+            "--check-kilosort-output/--ignore-kilosort-output",
+            help="Check Kilosort output or not.",
+        ),
+    ] = False
 ):
     """
     Validate all sessions of all subjects that happened today.
@@ -1260,6 +1275,7 @@ def validate_today(
                     check_videos,
                     config.WHITELISTED_FILES_IN_ROOT,
                     config.EXTENSIONS_TO_RENAME_AND_UPLOAD,
+                    check_kilosort=check_kilosort
                 )
             except Exception as e:
                 print(f"[bold red]Problem with {session_path.name}: {e.args[0]}\n")
