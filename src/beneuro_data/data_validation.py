@@ -22,8 +22,11 @@ def validate_raw_session(
     include_videos: bool,
     whitelisted_files_in_root: tuple[str, ...],
     allowed_extensions_not_in_root: tuple[str, ...],
+<<<<<<< HEAD
     include_nwb: bool = False,
     include_pyaldata: bool = False,
+=======
+>>>>>>> main
     include_kilosort: bool = False,
 ):
     """
@@ -60,8 +63,11 @@ def validate_raw_session(
     ephys_files = []
     video_files = []
     kilosort_files = []
+<<<<<<< HEAD
     nwb_files = []
     pyaldata_files = []
+=======
+>>>>>>> main
 
     if include_behavior:
         behavior_files = validate_raw_behavioral_data_of_session(
@@ -75,6 +81,7 @@ def validate_raw_session(
         video_files = validate_raw_videos_of_session(session_path, subject_name)
     if include_kilosort:
         kilosort_files = validate_kilosort(session_path)
+<<<<<<< HEAD
     if include_nwb:
         nwb_files = validate_nwb_file(session_path)
     if include_pyaldata:
@@ -83,6 +90,10 @@ def validate_raw_session(
     
 
     return behavior_files, ephys_files, video_files, nwb_files, pyaldata_files, kilosort_files
+=======
+
+    return behavior_files, ephys_files, video_files, kilosort_files
+>>>>>>> main
 
 
 def validate_date_format(extracted_date_str: str) -> bool:
@@ -417,9 +428,13 @@ def validate_raw_ephys_recording(
         # Only include files in found_filenames
         found_filenames = {p.name for p in probe_folder.iterdir() if p.is_file()}
         if not expected_filenames.issubset(found_filenames):
+<<<<<<< HEAD
             raise ValueError(
                 f"Expected files not found in probe directory: {probe_folder}"
             )
+=======
+            raise ValueError(f"Expected files not found in probe directory: {probe_folder}")
+>>>>>>> main
 
     return True
 
@@ -556,6 +571,7 @@ def validate_kilosort(session_path: Path) -> list[Path]:
     if len(kilosort_files) == 0:
         raise FileNotFoundError("No Kilosort output found.")
     return kilosort_files
+<<<<<<< HEAD
 
 def validate_nwb_file(session_path: Path) -> list[Path]:
     expected_nwb_filename = f"{session_path.name}.nwb"
@@ -572,3 +588,5 @@ def validate_pyaldata_file(session_path: Path) -> list[Path]:
     # Additional validation can be added here
     return [pyaldata_file]
 
+=======
+>>>>>>> main

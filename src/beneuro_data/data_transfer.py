@@ -173,6 +173,13 @@ def upload_raw_session(
             remote_root,
         )
 
+    if include_kilosort:
+        upload_kilosort(
+            local_session_path,
+            local_root,
+            remote_root,
+        )
+
     return True
 
 
@@ -641,7 +648,6 @@ def download_raw_session(
         include_nwb=include_nwb,
         include_pyaldata=include_pyaldata,
         include_kilosort=include_kilosort
-
     )
 
     return local_session_path

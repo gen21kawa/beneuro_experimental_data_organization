@@ -600,13 +600,6 @@ def validate_session(
         bool,
         typer.Option("--check-videos/--ignore-videos", help="Check videos data or not."),
     ] = True,
-    check_kilosort: Annotated[
-        bool,
-        typer.Option(
-            "--check-kilosort-output/--ignore-kilosort-output",
-            help="Check Kilosort output or not.",
-        ),
-    ] = False,
     check_nwb: Annotated[
         bool,
         typer.Option(
@@ -619,6 +612,13 @@ def validate_session(
         typer.Option(
             "--check-pyaldata/--ignore-pyaldata",
             help="Check PyalData files or not.",
+        ),
+    ] = False,
+    check_kilosort: Annotated[
+        bool,
+        typer.Option(
+            "--check-kilosort-output/--ignore-kilosort-output",
+            help="Check Kilosort output or not.",
         ),
     ] = False
 ):
@@ -685,13 +685,6 @@ def validate_last(
         bool,
         typer.Option("--check-videos/--ignore-videos", help="Check videos data or not."),
     ] = True,
-    check_kilosort: Annotated[
-        bool,
-        typer.Option(
-            "--check-kilosort-output/--ignore-kilosort-output",
-            help="Check Kilosort output or not.",
-        ),
-    ] = False,
     check_nwb: Annotated[
         bool,
         typer.Option(
@@ -704,6 +697,13 @@ def validate_last(
         typer.Option(
             "--check-pyaldata/--ignore-pyaldata",
             help="Check PyalData files or not.",
+        ),
+    ] = False,
+    check_kilosort: Annotated[
+        bool,
+        typer.Option(
+            "--check-kilosort-output/--ignore-kilosort-output",
+            help="Check Kilosort output or not.",
         ),
     ] = False
 ):
@@ -879,6 +879,20 @@ def upload_session(
     processing_level: Annotated[
         str, typer.Argument(help="Processing level of the session. raw or processed.")
     ] = "raw",
+    include_nwb: Annotated[
+        bool,
+        typer.Option(
+            "--include-nwb/--ignore-nwb",
+            help="Upload NWB files or not.",
+        ),
+    ] = False,
+    include_pyaldata: Annotated[
+        bool,
+        typer.Option(
+            "--include-pyaldata/--ignore-pyaldata",
+            help="Upload PyalData files or not.",
+        ),
+    ] = False,
     include_kilosort: Annotated[
         bool,
         typer.Option(
@@ -896,7 +910,7 @@ def upload_session(
     if processing_level != "raw":
         raise NotImplementedError("Sorry, only raw data is supported for now.")
 
-    if all([not include_behavior, not include_ephys, not include_videos, not include_kilosort]):
+    if all([not include_behavior, not include_ephys, not include_videos, not include_kilosort, not include_nwb, not include_pyaldata]):
         raise ValueError("At least one data type must be included.")
 
     # if videos are included, rename them first if not specified otherwise
@@ -923,6 +937,8 @@ def upload_session(
         config.EXTENSIONS_TO_RENAME_AND_UPLOAD,
         rename_videos_first,
         rename_extra_files_first,
+        include_nwb=include_nwb,
+        include_pyaldata=include_pyaldata,
         include_kilosort=include_kilosort
     )
 
@@ -1257,6 +1273,27 @@ def validate_sessions(
             help="Rename extra files (e.g. comment.txt) before validating and uploading.",
         ),
     ] = True,
+    check_nwb: Annotated[
+        bool,
+        typer.Option(
+            "--check-nwb/--ignore-nwb",
+            help="Check NWB files or not.",
+        ),
+    ] = False,
+    check_pyaldata: Annotated[
+        bool,
+        typer.Option(
+            "--check-pyaldata/--ignore-pyaldata",
+            help="Check PyalData files or not.",
+        ),
+    ] = False,
+    check_kilosort: Annotated[
+        bool,
+        typer.Option(
+            "--check-kilosort-output/--ignore-kilosort-output",
+            help="Check Kilosort output or not.",
+        ),
+    ] = False
 ):
     """
     Validate (raw) experimental data in all sessions of a given subject.
@@ -1288,6 +1325,9 @@ def validate_sessions(
                     config.EXTENSIONS_TO_RENAME_AND_UPLOAD,
                     rename_videos_first,
                     rename_extra_files_first,
+                    check_nwb=check_nwb,
+                    check_pyaldata=check_pyaldata,
+                    check_kilosort=check_kilosort
                 )
             except Exception as e:
                 print(f"[bold red]Problem with {session_path.name}: {e.args[0]}\n")
@@ -1353,6 +1393,13 @@ def validate_today(
         bool,
         typer.Option("--check-videos/--ignore-videos", help="Check videos data or not."),
     ] = True,
+    check_kilosort: Annotated[
+        bool,
+        typer.Option(
+            "--check-kilosort-output/--ignore-kilosort-output",
+            help="Check Kilosort output or not.",
+        ),
+    ] = False
 ):
     """
     Validate all sessions of all subjects that happened today.
@@ -1386,6 +1433,7 @@ def validate_today(
                     check_videos,
                     config.WHITELISTED_FILES_IN_ROOT,
                     config.EXTENSIONS_TO_RENAME_AND_UPLOAD,
+                    check_kilosort=check_kilosort
                 )
             except Exception as e:
                 print(f"[bold red]Problem with {session_path.name}: {e.args[0]}\n")
