@@ -22,6 +22,8 @@ def validate_raw_session(
     include_videos: bool,
     whitelisted_files_in_root: tuple[str, ...],
     allowed_extensions_not_in_root: tuple[str, ...],
+    include_nwb: bool = False,
+    include_pyaldata: bool = False,
     include_kilosort: bool = False,
 ):
     """
@@ -58,6 +60,8 @@ def validate_raw_session(
     ephys_files = []
     video_files = []
     kilosort_files = []
+    nwb_files = []
+    pyaldata_files = []
 
     if include_behavior:
         behavior_files = validate_raw_behavioral_data_of_session(
@@ -71,8 +75,12 @@ def validate_raw_session(
         video_files = validate_raw_videos_of_session(session_path, subject_name)
     if include_kilosort:
         kilosort_files = validate_kilosort(session_path)
+    if include_nwb:
+        nwb_files = validate_nwb_file(session_path)
+    if include_pyaldata:
+        pyaldata_files = validate_pyaldata_file(session_path)
 
-    return behavior_files, ephys_files, video_files, kilosort_files
+    return behavior_files, ephys_files, video_files, nwb_files, pyaldata_files, kilosort_files
 
 
 def validate_date_format(extracted_date_str: str) -> bool:
@@ -544,3 +552,19 @@ def validate_kilosort(session_path: Path) -> list[Path]:
     if len(kilosort_files) == 0:
         raise FileNotFoundError("No Kilosort output found.")
     return kilosort_files
+
+def validate_nwb_file(session_path: Path) -> list[Path]:
+    expected_nwb_filename = f"{session_path.name}.nwb"
+    nwb_file = session_path / expected_nwb_filename
+    if not nwb_file.exists():
+        raise FileNotFoundError(f"No NWB file found.")
+    return [nwb_file]
+
+def validate_pyaldata_file(session_path: Path) -> list[Path]:
+    expected_pyaldata_filename = f"{session_path.name}_pyaldata.mat"
+    pyaldata_file = session_path / expected_pyaldata_filename
+    if not pyaldata_file.exists():
+        raise FileNotFoundError(f"No PyalData file found.")
+    # Additional validation can be added here
+    return [pyaldata_file]
+
