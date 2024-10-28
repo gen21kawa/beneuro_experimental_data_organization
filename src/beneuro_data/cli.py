@@ -2,6 +2,8 @@ import datetime
 from pathlib import Path
 from typing import List, Optional
 
+import warnings
+
 import typer
 from rich import print
 from typing_extensions import Annotated
@@ -365,11 +367,17 @@ def download_session(
         ),
     ] = False
 ):
+    warnings.warn(
+        "download-session is deprecated. Use `bnd dl` or `bnd download-last` instead.",
+        FutureWarning,
+        stacklevel=2
+    )
     """
     Download (raw) experimental data in a given session from the remote server.
 
     Example usage after navigating to session folder on RDS:
         `bnd download-session . M017`
+    """
     """
     if processing_level != "raw":
         raise NotImplementedError("Sorry, only raw data is supported for now.")
@@ -393,7 +401,7 @@ def download_session(
         include_pyaldata=include_pyaldata,
         include_kilosort=include_kilosort
     )
-
+    """
     return True
 
 
@@ -901,11 +909,18 @@ def upload_session(
         ),
     ] = False
 ):
+    warnings.warn(
+        "upload-session is deprecated. Use `bnd up` or `bnd upload-last` instead.",
+        FutureWarning,
+        stacklevel=2
+    )
+
     """
     Upload (raw) experimental data in a given session to the remote server.
 
     Example usage:
         `bnd upload-session . M017`
+    """
     """
     if processing_level != "raw":
         raise NotImplementedError("Sorry, only raw data is supported for now.")
@@ -941,7 +956,7 @@ def upload_session(
         include_pyaldata=include_pyaldata,
         include_kilosort=include_kilosort
     )
-
+    """
     return True
 
 
