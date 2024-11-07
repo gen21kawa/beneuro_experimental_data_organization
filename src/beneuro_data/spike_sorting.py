@@ -94,7 +94,7 @@ def get_ap_stream_names(recording_path: Path) -> list[str]:
     return [stream_name for stream_name in all_stream_names if stream_name.endswith("ap")]
 
 
-def run_kilosort_on_recording_and_save_in_processed(
+def run_kilosort_on_recording_and_save_in_raw(
     raw_recording_path: Path,
     base_path: Path,
     stream_names_to_process: Optional[list[str]] = None,
@@ -102,7 +102,7 @@ def run_kilosort_on_recording_and_save_in_processed(
     verbose: bool = False,
 ) -> None:
     """
-    Run Kilosort on a SpikeGLX recording and save the results in the processed folder.
+    Run Kilosort on a SpikeGLX recording and save the results in the raw folder.
 
     Parameters
     ----------
@@ -121,7 +121,7 @@ def run_kilosort_on_recording_and_save_in_processed(
 
     Returns
     -------
-    None, but the results are saved in the processed folder.
+    None, but the results are saved in the raw folder.
     """
     if isinstance(raw_recording_path, str):
         raw_recording_path = Path(raw_recording_path)
@@ -133,17 +133,17 @@ def run_kilosort_on_recording_and_save_in_processed(
 
     # determine output path
     raw_base_path = base_path / "raw"
-    processed_base_path = base_path / "processed"
+    #processed_base_path = base_path / "processed"
 
     raw_session_path = raw_recording_path.parent
     recording_folder_name = raw_recording_path.name
     session_folder_name = raw_session_path.name
 
-    processed_session_path = processed_base_path / raw_session_path.relative_to(
-        raw_base_path
-    )
-    processed_recording_ephys_path = (
-        processed_session_path / f"{session_folder_name}_ephys" / recording_folder_name
+    #processed_session_path = processed_base_path / raw_session_path.relative_to(
+    #    raw_base_path
+    #)
+    raw_recording_ephys_path = (
+        raw_session_path / f"{session_folder_name}_ephys" / recording_folder_name
     )
 
     # if they are not explicitly given, figure out the AP streams ~ probes, e.g. imec0.ap
@@ -162,8 +162,8 @@ def run_kilosort_on_recording_and_save_in_processed(
     for ap_stream_name in stream_names_to_process:
         probe_name = ap_stream_name.split(".")[0]
 
-        probe_folder_name = f"{processed_recording_ephys_path.name}_{probe_name}"
-        processed_probe_path = processed_recording_ephys_path / probe_folder_name
+        probe_folder_name = f"{raw_recording_ephys_path.name}_{probe_name}"
+        raw_probe_path = raw_recording_ephys_path / probe_folder_name
 
         if verbose:
             print(f"Running Kilosort for {ap_stream_name}")
@@ -171,13 +171,13 @@ def run_kilosort_on_recording_and_save_in_processed(
         _ = run_kilosort_on_stream(
             input_path=raw_recording_path,
             stream_name=f"{probe_name}.ap",
-            output_path=processed_probe_path,
+            output_path=raw_probe_path,
             clean_up_temp_files=clean_up_temp_files,
             verbose=verbose,
         )
 
 
-def run_kilosort_on_session_and_save_in_processed(
+def run_kilosort_on_session_and_save_in_raw(
     raw_session_path: Path,
     subject_name: str,
     base_path: Path,
@@ -187,7 +187,7 @@ def run_kilosort_on_session_and_save_in_processed(
     verbose: bool = False,
 ) -> None:
     """
-    Run Kilosort on all recordings within a session and save the results in the processed folder.
+    Run Kilosort on all recordings within a session and save the results in the raw folder.
 
     Parameters
     ----------
@@ -211,7 +211,7 @@ def run_kilosort_on_session_and_save_in_processed(
 
     Returns
     -------
-    None, but the results are saved in the processed folder.
+    None, but the results are saved in the raw folder.
     """
     # adapted from spikeinterface
     if platform.system() != "Linux":
@@ -245,7 +245,7 @@ def run_kilosort_on_session_and_save_in_processed(
         if verbose:
             print(f"Processing {recording_path.name}...")
 
-        run_kilosort_on_recording_and_save_in_processed(
+        run_kilosort_on_recording_and_save_in_raw(
             recording_path,
             base_path,
             stream_names_to_process,
