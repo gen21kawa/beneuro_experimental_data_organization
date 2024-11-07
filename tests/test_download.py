@@ -26,6 +26,8 @@ class RawSessionDownloadTestCase:
     include_behavior: bool
     include_ephys: bool
     include_videos: bool
+    include_nwb: bool = False
+    include_pyaldata: bool = False
     include_kilosort: bool = False
 
     @property
@@ -93,14 +95,14 @@ session_download_test_cases = [
     # ),
     # with kilosort
     RawSessionDownloadTestCase(
-    yaml_name="M011_with_kilosort.yaml",
-    session_name="M011_2023_04_04_16_00",
-    expected_error=None,
-    error_message=None,
-    include_behavior=True,
-    include_ephys=True,
-    include_videos=True,
-    include_kilosort=True,
+        yaml_name="M011_with_kilosort.yaml",
+        session_name="M011_2023_04_04_16_00",
+        expected_error=None,
+        error_message=None,
+        include_behavior=True,
+        include_ephys=True,
+        include_videos=True,
+        include_kilosort=True,
     ),
     # without kilosort
     RawSessionDownloadTestCase(
@@ -113,7 +115,50 @@ session_download_test_cases = [
         include_videos=True,
         include_kilosort=True,
     ),
-
+    # without nwb file
+    RawSessionDownloadTestCase(
+        yaml_name="M011_without_nwb.yaml",
+        session_name="M011_2023_04_04_16_00",
+        expected_error=FileNotFoundError,
+        error_message="No NWB file found.",
+        include_behavior=True,
+        include_ephys=True,
+        include_videos=True,
+        include_nwb=True,
+    ),
+    # with nwb file
+    RawSessionDownloadTestCase(
+        yaml_name="M011_with_nwb.yaml",
+        session_name="M011_2023_04_04_16_00",
+        expected_error=None,
+        error_message=None,
+        include_behavior=True,
+        include_ephys=True,
+        include_videos=True,
+        include_nwb=True,
+    ),
+    # without pyaldata file
+    RawSessionDownloadTestCase(
+        yaml_name="M011_without_pyaldata.yaml",
+        session_name="M011_2023_04_04_16_00",
+        expected_error=FileNotFoundError,
+        error_message="No pyaldata file found.",
+        include_behavior=True,
+        include_ephys=True,
+        include_videos=True,
+        include_pyaldata=True,
+    ),
+    # with pyaldata file
+    RawSessionDownloadTestCase(
+        yaml_name="M011_with_pyaldata.yaml",
+        session_name="M011_2023_04_04_16_00",
+        expected_error=None,
+        error_message=None,
+        include_behavior=True,
+        include_ephys=True,
+        include_videos=True,
+        include_pyaldata=True,
+    )
 ]
 
 
@@ -150,6 +195,8 @@ def test_download_raw_session(tmp_path, test_case: RawSessionDownloadTestCase):
             test_case.include_videos,
             WHITELISTED_FILES_IN_ROOT,
             EXTENSIONS_TO_RENAME_AND_UPLOAD,
+            include_nwb = test_case.include_nwb,
+            include_pyaldata = test_case.include_pyaldata,
             include_kilosort = test_case.include_kilosort
         )
 
@@ -172,4 +219,7 @@ def test_download_raw_session(tmp_path, test_case: RawSessionDownloadTestCase):
                 test_case.include_videos,
                 WHITELISTED_FILES_IN_ROOT,
                 EXTENSIONS_TO_RENAME_AND_UPLOAD,
+                include_nwb = test_case.include_nwb,
+                include_pyaldata = test_case.include_pyaldata,
+                include_kilosort = test_case.include_kilosort
             )
