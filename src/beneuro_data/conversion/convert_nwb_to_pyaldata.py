@@ -799,7 +799,7 @@ def convert_nwb_to_pyaldata(nwbfile_path, verbose):
     # Convert to pyaldata
     parsed_nwbfile.run_conversion()
 
-    # Save in processed
+    # Save in raw
     parsed_nwbfile.save_to_mat()
 
     return
